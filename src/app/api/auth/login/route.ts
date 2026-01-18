@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RecaptchaService } from '@/lib/services/recaptcha';
 import { getUTHApi } from '@/lib/services/uth-api';
-import { userConfigDb } from '@/lib/db';
+import { userConfigDb } from '@/lib/db-postgres';
 import { generateUserSession, getRequiredEnv, getOptionalEnv } from '@/lib/utils';
 
 interface LoginRequestBody {
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Save/update user config to database (including token)
     try {
-      userConfigDb.insert({
+      await userConfigDb.insert({
         user_session: userSession,
         uth_cookies: JSON.stringify({
           ...loginResult.cookies,

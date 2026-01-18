@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUTHApi } from '@/lib/api-helpers';
-import { registrationLogDb } from '@/lib/db';
+import { registrationLogDb } from '@/lib/db-postgres';
 
 interface CancelRequestBody {
   idDangKy: number;
@@ -40,7 +40,7 @@ export async function DELETE(request: NextRequest) {
 
     // Log cancellation attempt
     try {
-      registrationLogDb.insert({
+      await registrationLogDb.insert({
         user_session: userSession,
         action: 'cancel',
         course_name: courseName,
@@ -72,7 +72,7 @@ export async function DELETE(request: NextRequest) {
     if (userSession) {
       try {
         const body: CancelRequestBody = await request.json();
-        registrationLogDb.insert({
+        await registrationLogDb.insert({
           user_session: userSession,
           action: 'cancel',
           course_name: body.courseName || '',

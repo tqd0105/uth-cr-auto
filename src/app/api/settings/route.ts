@@ -1,12 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { userConfigDb, initDatabase } from '@/lib/db';
-
-// Initialize database
-try {
-  initDatabase();
-} catch (e) {
-  // Already initialized
-}
+import { userConfigDb } from '@/lib/db-postgres';
 
 // GET - Get current notification settings
 export async function GET(request: NextRequest) {
@@ -20,7 +13,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const userConfig = userConfigDb.findBySession(userSession);
+    const userConfig = await userConfigDb.findBySession(userSession);
     
     if (!userConfig) {
       return NextResponse.json(
@@ -68,7 +61,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    userConfigDb.updateNotificationEmail(userSession, email || null);
+    await userConfigDb.updateNotificationEmail(userSession, email || null);
 
     return NextResponse.json({
       success: true,

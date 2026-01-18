@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { RecaptchaService } from '@/lib/services/recaptcha';
 import { getAuthenticatedUTHApi } from '@/lib/api-helpers';
-import { registrationLogDb } from '@/lib/db';
+import { registrationLogDb } from '@/lib/db-postgres';
 import { getOptionalEnv } from '@/lib/utils';
 
 interface RegisterRequestBody {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
       if (!recaptchaResult.success) {
         // Log failed registration
         try {
-          registrationLogDb.insert({
+          await registrationLogDb.insert({
             user_session: userSession,
             action: 'register',
             course_name: courseName,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Log registration attempt
     try {
-      registrationLogDb.insert({
+      await registrationLogDb.insert({
         user_session: userSession,
         action: 'register',
         course_name: courseName,
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     if (userSession) {
       try {
         const body: RegisterRequestBody = await request.json();
-        registrationLogDb.insert({
+        await registrationLogDb.insert({
           user_session: userSession,
           action: 'register',
           course_name: body.courseName || '',

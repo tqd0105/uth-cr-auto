@@ -1,5 +1,5 @@
 import { getUTHApi } from './uth-api';
-import { userConfigDb, registrationScheduleDb, registrationLogDb } from '../db';
+import { userConfigDb, registrationScheduleDb, registrationLogDb } from '../db-postgres';
 import { RegistrationStatus } from '../types/uth';
 import { emailService } from './email';
 
@@ -38,7 +38,7 @@ class AutoRegistrationScheduler {
   async scheduleRegistration(config: SchedulerConfig): Promise<SchedulerResult> {
     try {
       // Validate user session
-      const userConfig = userConfigDb.findBySession(config.userSession);
+      const userConfig = await userConfigDb.findBySession(config.userSession);
       if (!userConfig) {
         return {
           success: false,
@@ -47,7 +47,7 @@ class AutoRegistrationScheduler {
       }
 
       // Insert schedule into database
-      const result = registrationScheduleDb.insert({
+      const result = await registrationScheduleDb.insert({
         user_session: config.userSession,
         course_code: config.courseCode,
         course_name: config.courseName,
@@ -113,7 +113,7 @@ class AutoRegistrationScheduler {
       console.log(`[Scheduler] Starting execution for schedule ID: ${scheduleId}`);
       
       // Get schedule from database by ID
-      const schedule = registrationScheduleDb.findById(scheduleId);
+      const schedule = await registrationScheduleDb.findById(scheduleId);
 
       if (!schedule) {
         console.error(`[Scheduler] Schedule ${scheduleId} not found in database`);
@@ -130,12 +130,12 @@ class AutoRegistrationScheduler {
       });
 
       // Update status to running
-      registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.RUNNING);
+      await registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.RUNNING);
 
       // Get user cookies
-      const userConfig = userConfigDb.findBySession(schedule.user_session);
+      const userConfig = await userConfigDb.findBySession(schedule.user_session);
       if (!userConfig) {
-        registrationScheduleDb.updateStatus(
+        await registrationScheduleDb.updateStatus(
           scheduleId, 
           RegistrationStatus.FAILED, 
           'Phiên đăng nhập không hợp lệ'
@@ -160,10 +160,10 @@ class AutoRegistrationScheduler {
 
         if (alreadyRegistered) {
           console.log(`[Scheduler] Class ${schedule.class_code} already registered! Marking as success.`);
-          registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.SUCCESS);
+          await registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.SUCCESS);
           
           // Log success
-          registrationLogDb.insert({
+          await registrationLogDb.insert({
             user_session: schedule.user_session,
             action: 'register',
             course_name: schedule.course_name,
@@ -197,10 +197,10 @@ class AutoRegistrationScheduler {
 
         if (success) {
           console.log(`[Scheduler] Registration successful for schedule ${scheduleId}`);
-          registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.SUCCESS);
+          await registrationScheduleDb.updateStatus(scheduleId, RegistrationStatus.SUCCESS);
           
           // Log success
-          registrationLogDb.insert({
+          await registrationLogDb.insert({
             user_session: schedule.user_session,
             action: 'register',
             course_name: schedule.course_name,
@@ -241,7 +241,7 @@ class AutoRegistrationScheduler {
    * Uses aggressive retry with shorter delays for server overload situations
    */
   private async handleRetry(scheduleId: number, errorMessage: string): Promise<void> {
-    const schedule = registrationScheduleDb.findById(scheduleId);
+    const schedule = await registrationScheduleDb.findById(scheduleId);
 
     if (!schedule) {
       console.error(`[Scheduler] Retry: Schedule ${scheduleId} not found`);
@@ -249,11 +249,11 @@ class AutoRegistrationScheduler {
     }
 
     const maxRetries = schedule.max_retries || RETRY_CONFIG.maxRetries;
-    const userConfig = userConfigDb.findBySession(schedule.user_session);
+    const userConfig = await userConfigDb.findBySession(schedule.user_session);
     
     if (schedule.retry_count < maxRetries) {
       // Schedule retry
-      registrationScheduleDb.updateStatus(
+      await registrationScheduleDb.updateStatus(
         scheduleId, 
         RegistrationStatus.RETRY, 
         errorMessage, 
@@ -276,7 +276,7 @@ class AutoRegistrationScheduler {
       this.runningJobs.set(scheduleId, timeout);
     } else {
       // Max retries reached
-      registrationScheduleDb.updateStatus(
+      await registrationScheduleDb.updateStatus(
         scheduleId, 
         RegistrationStatus.FAILED, 
         `Đã thử ${maxRetries} lần nhưng không thành công: ${errorMessage}`
@@ -284,7 +284,7 @@ class AutoRegistrationScheduler {
 
       // Log failure
       if (userConfig) {
-        registrationLogDb.insert({
+        await registrationLogDb.insert({
           user_session: schedule.user_session,
           action: 'register',
           course_name: schedule.course_name,
@@ -311,7 +311,7 @@ class AutoRegistrationScheduler {
   /**
    * Cancel a scheduled registration
    */
-  cancelSchedule(scheduleId: number): boolean {
+  async cancelSchedule(scheduleId: number): Promise<boolean> {
     const timeout = this.runningJobs.get(scheduleId);
     
     if (timeout) {
@@ -319,15 +319,15 @@ class AutoRegistrationScheduler {
       this.runningJobs.delete(scheduleId);
     }
 
-    registrationScheduleDb.delete(scheduleId);
+    await registrationScheduleDb.delete(scheduleId);
     return true;
   }
 
   /**
    * Get all schedules for a user
    */
-  getUserSchedules(userSession: string) {
-    return registrationScheduleDb.findByUserSession(userSession);
+  async getUserSchedules(userSession: string) {
+    return await registrationScheduleDb.findByUserSession(userSession);
   }
 
   /**
@@ -338,7 +338,7 @@ class AutoRegistrationScheduler {
     console.log(`[Scheduler] checkAndExecutePendingSchedules called for user session`);
     
     try {
-      const schedules = registrationScheduleDb.findByUserSession(userSession);
+      const schedules = await registrationScheduleDb.findByUserSession(userSession);
       const now = new Date();
 
       console.log(`[Scheduler] Found ${schedules.length} schedules for user`);
@@ -389,7 +389,7 @@ class AutoRegistrationScheduler {
     this.isProcessing = true;
 
     try {
-      const pendingSchedules = registrationScheduleDb.findPending();
+      const pendingSchedules = await registrationScheduleDb.findPending();
 
       for (const schedule of pendingSchedules) {
         const scheduleTime = new Date(schedule.schedule_time);

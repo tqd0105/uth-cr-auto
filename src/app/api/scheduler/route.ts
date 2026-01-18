@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { autoRegistrationScheduler } from '@/lib/services/scheduler';
-import { registrationScheduleDb, registrationLogDb } from '@/lib/db';
+import { registrationScheduleDb, registrationLogDb } from '@/lib/db-postgres';
 
 // Create a new scheduled registration
 export async function POST(request: NextRequest) {
@@ -82,8 +82,8 @@ export async function GET(request: NextRequest) {
     // This is the polling mechanism that makes auto-registration work
     await autoRegistrationScheduler.checkAndExecutePendingSchedules(userSession);
 
-    const schedules = autoRegistrationScheduler.getUserSchedules(userSession);
-    const logs = registrationLogDb.findByUserSession(userSession, 20);
+    const schedules = await autoRegistrationScheduler.getUserSchedules(userSession);
+    const logs = await registrationLogDb.findByUserSession(userSession, 20);
 
     return NextResponse.json({
       success: true,
@@ -124,7 +124,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const success = autoRegistrationScheduler.cancelSchedule(parseInt(scheduleId));
+    const success = await autoRegistrationScheduler.cancelSchedule(parseInt(scheduleId));
 
     if (success) {
       return NextResponse.json({
