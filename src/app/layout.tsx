@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   title: "UTH Auto Registration",
   description: "Đăng ký học phần tự động - Trường Đại học Giao thông Vận tải TP.HCM",
   icons: {
-    icon: '/uth.png',
+    icon: '/uth2.png',
   },
 };
 

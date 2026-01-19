@@ -248,13 +248,13 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
                     : 'border-gray-200 hover:border-emerald-300'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+                <div className="flex items-center justify-center gap-2 mb-0.5 sm:mb-1">
                   <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center ${
                     registrationMode === 'immediate' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
                   }`}>
                     {registrationMode === 'immediate' && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>}
                   </div>
-                  <span className="font-medium text-gray-900 text-xs sm:text-sm">⚡ ĐK ngay</span>
+                  <span className="flex items-center gap-1 font-medium text-gray-900 text-xs sm:text-sm"><img src="touch.png" width={20} alt="" /> ĐK ngay</span>
                 </div>
                 <p className="text-[10px] sm:text-xs text-gray-600 hidden sm:block">Đăng ký tất cả môn ngay</p>
               </button>
@@ -267,13 +267,13 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
                     : 'border-gray-200 hover:border-blue-300'
                 }`}
               >
-                <div className="flex items-center gap-2 mb-0.5 sm:mb-1">
+                <div className="flex items-center justify-center gap-2 mb-0.5 sm:mb-1">
                   <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center ${
                     registrationMode === 'schedule' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
                   }`}>
                     {registrationMode === 'schedule' && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>}
                   </div>
-                  <span className="font-medium text-gray-900 text-xs sm:text-sm">📅 Hẹn lịch</span>
+                  <span className="flex items-center gap-1 font-medium text-gray-900 text-xs sm:text-sm"><img src="calendar.png" width={20} alt="" /> Hẹn lịch</span>
                 </div>
                 <p className="text-[10px] sm:text-xs text-gray-600 hidden sm:block">Đặt thời gian ĐK tự động</p>
               </button>

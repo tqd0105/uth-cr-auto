@@ -13,6 +13,7 @@ import {
   XCircle
 } from 'lucide-react';
 import type { DangKyHocPhan } from '@/lib/types/uth';
+import { CancelModal } from './CancelModal';
 
 interface RegisteredCoursesProps {
   courses: DangKyHocPhan[];
@@ -20,47 +21,20 @@ interface RegisteredCoursesProps {
 }
 
 export function RegisteredCourses({ courses, onRefresh }: RegisteredCoursesProps) {
-  const [cancelingId, setCancelingId] = useState<number | null>(null);
+  const [cancelingCourse, setCancelingCourse] = useState<DangKyHocPhan | null>(null);
   const [error, setError] = useState('');
 
-  const handleCancel = async (course: DangKyHocPhan) => {
+  const handleCancelClick = (course: DangKyHocPhan) => {
     if (!course.isAllowCancel) {
       setError('Không thể hủy đăng ký học phần này');
       return;
     }
+    setCancelingCourse(course);
+  };
 
-    if (!confirm(`Bạn có chắc muốn hủy đăng ký "${course.tenMonHoc}"?`)) {
-      return;
-    }
-
-    setCancelingId(course.id);
-    setError('');
-
-    try {
-      const response = await fetch('/api/courses/cancel', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          idDangKy: course.id,
-          courseName: course.tenMonHoc,
-          classCode: course.maLopHocPhan
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        onRefresh();
-      } else {
-        setError(data.message || 'Hủy đăng ký thất bại');
-      }
-    } catch (err) {
-      setError('Lỗi kết nối server');
-    } finally {
-      setCancelingId(null);
-    }
+  const handleCancelSuccess = () => {
+    setCancelingCourse(null);
+    onRefresh();
   };
 
   const formatDate = (dateString: string) => {
@@ -167,17 +141,10 @@ export function RegisteredCourses({ courses, onRefresh }: RegisteredCoursesProps
                       variant="outline"
                       size="sm"
                       className="text-red-600 border-red-200 hover:bg-red-50 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
-                      onClick={() => handleCancel(course)}
-                      disabled={cancelingId === course.id}
+                      onClick={() => handleCancelClick(course)}
                     >
-                      {cancelingId === course.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                          Hủy
-                        </>
-                      )}
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+                      Hủy
                     </Button>
                   )}
                 </div>
@@ -206,6 +173,15 @@ export function RegisteredCourses({ courses, onRefresh }: RegisteredCoursesProps
           </div>
         </CardContent>
       </Card>
+
+      {/* Cancel Modal */}
+      {cancelingCourse && (
+        <CancelModal
+          course={cancelingCourse}
+          onClose={() => setCancelingCourse(null)}
+          onSuccess={handleCancelSuccess}
+        />
+      )}
     </>
   );
 }

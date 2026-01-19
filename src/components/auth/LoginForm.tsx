@@ -69,6 +69,36 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
       const data = await response.json();
 
       if (data.success) {
+        // Ghi nhận consent log với student_id sau khi đăng nhập thành công
+        try {
+          // Đọc consent data từ localStorage (được lưu khi user chấp nhận điều khoản)
+          const storedConsentData = localStorage.getItem('uth-auto-consent-data');
+          const consentData = storedConsentData ? JSON.parse(storedConsentData) : {};
+          
+          // Lấy student_name từ response nếu có
+          const studentName = data.student?.fullName || data.student?.name || '';
+          
+          await fetch('/api/consent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId: consentData.sessionId || `login-${Date.now()}`,
+              studentId: username.trim(),
+              studentName: studentName,
+              screenResolution: consentData.screenResolution || `${window.screen.width}x${window.screen.height}`,
+              timezone: consentData.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+              language: consentData.language || navigator.language,
+              consentVersion: consentData.consentVersion || '1.0',
+              acceptedAt: consentData.acceptedAt || new Date().toISOString(),
+            }),
+          });
+          
+          // Xóa consent data sau khi đã ghi nhận thành công
+          localStorage.removeItem('uth-auto-consent-data');
+        } catch (e) {
+          // Ignore consent log errors
+        }
+
         setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
         setTimeout(() => {
           router.push('/dashboard');

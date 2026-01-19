@@ -13,19 +13,20 @@ import {
   Square,
   Users
 } from 'lucide-react';
-import type { HocPhan, LopHocPhan } from '@/lib/types/uth';
-import { ClassModal } from './ClassModal';
+import type { HocPhan, LopHocPhan, DangKyHocPhan } from '@/lib/types/uth';
+import { ClassModal } from './ClassModalV2';
 import { BulkRegistrationManager } from './BulkRegistrationManager';
 
 interface CourseListProps {
   courses: HocPhan[];
+  registeredCourses?: DangKyHocPhan[];
   onRefresh: () => void;
   bulkMode: boolean;
   selectedCourses?: Set<number>;
   setSelectedCourses?: (courses: Set<number>) => void;
 }
 
-export function CourseList({ courses, onRefresh, bulkMode, selectedCourses = new Set(), setSelectedCourses }: CourseListProps) {
+export function CourseList({ courses, registeredCourses = [], onRefresh, bulkMode, selectedCourses = new Set(), setSelectedCourses }: CourseListProps) {
   const [selectedCourse, setSelectedCourse] = useState<HocPhan | null>(null);
   const [classSections, setClassSections] = useState<LopHocPhan[]>([]);
   const [isLoadingClasses, setIsLoadingClasses] = useState(false);
@@ -160,6 +161,7 @@ export function CourseList({ courses, onRefresh, bulkMode, selectedCourses = new
         <ClassModal
           course={selectedCourse}
           classes={classSections}
+          registeredCourses={registeredCourses}
           isLoading={isLoadingClasses}
           onClose={handleCloseModal}
           onSuccess={() => {

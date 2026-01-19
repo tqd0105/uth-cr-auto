@@ -1,6 +1,29 @@
 import { sql } from '@vercel/postgres';
 import { RegistrationSchedule, RegistrationLog, UserConfig, RegistrationStatus } from './types/uth';
 
+// Waitlist status enum
+export enum WaitlistStatus {
+  WAITING = 'waiting',
+  REGISTERED = 'registered',
+  CANCELLED = 'cancelled',
+  EXPIRED = 'expired'
+}
+
+export interface WaitlistEntry {
+  id: number;
+  user_session: string;
+  course_code: string;
+  course_name: string;
+  class_id: string;
+  class_code: string;
+  priority: number;
+  status: WaitlistStatus;
+  check_interval: number; // seconds
+  last_checked?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 // Initialize database tables
 export async function initDatabase() {
   try {
@@ -54,6 +77,69 @@ export async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_schedules_status ON registration_schedules(status)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_schedules_time ON registration_schedules(schedule_time)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_logs_user ON registration_logs(user_session)`;
+
+    // Waitlist table
+    await sql`
+      CREATE TABLE IF NOT EXISTS waitlist (
+        id SERIAL PRIMARY KEY,
+        user_session TEXT NOT NULL,
+        course_code TEXT NOT NULL,
+        course_name TEXT NOT NULL,
+        class_id TEXT NOT NULL,
+        class_code TEXT NOT NULL,
+        priority INTEGER DEFAULT 1,
+        status TEXT NOT NULL DEFAULT 'waiting',
+        check_interval INTEGER DEFAULT 30,
+        last_checked TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_session, class_id)
+      )
+    `;
+
+    // Waitlist indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_waitlist_user ON waitlist(user_session)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_waitlist_status ON waitlist(status)`;
+
+    // Issue reports table
+    await sql`
+      CREATE TABLE IF NOT EXISTS issue_reports (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        issue_type TEXT NOT NULL,
+        description TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        user_agent TEXT,
+        status TEXT NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Issue reports index
+    await sql`CREATE INDEX IF NOT EXISTS idx_reports_status ON issue_reports(status)`;
+
+    // Consent logs table - Ghi nhận người dùng đồng ý điều khoản
+    await sql`
+      CREATE TABLE IF NOT EXISTS consent_logs (
+        id SERIAL PRIMARY KEY,
+        session_id TEXT NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        screen_resolution TEXT,
+        timezone TEXT,
+        language TEXT,
+        consent_version TEXT NOT NULL DEFAULT '1.0',
+        accepted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        student_id TEXT,
+        student_name TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Consent logs index
+    await sql`CREATE INDEX IF NOT EXISTS idx_consent_session ON consent_logs(session_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_consent_student ON consent_logs(student_id)`;
 
     console.log('Database initialized successfully');
   } catch (error) {
@@ -231,6 +317,98 @@ export const registrationLogDb = {
       LIMIT ${limit}
     `;
     return result.rows as RegistrationLog[];
+  }
+};
+
+// Waitlist operations
+export const waitlistDb = {
+  insert: async (entry: Omit<WaitlistEntry, 'id' | 'created_at' | 'updated_at' | 'last_checked'>) => {
+    const result = await sql`
+      INSERT INTO waitlist 
+      (user_session, course_code, course_name, class_id, class_code, priority, status, check_interval)
+      VALUES (
+        ${entry.user_session},
+        ${entry.course_code},
+        ${entry.course_name},
+        ${entry.class_id},
+        ${entry.class_code},
+        ${entry.priority || 1},
+        ${entry.status || 'waiting'},
+        ${entry.check_interval || 30}
+      )
+      ON CONFLICT(user_session, class_id) DO UPDATE SET
+        priority = ${entry.priority || 1},
+        status = 'waiting',
+        updated_at = CURRENT_TIMESTAMP
+      RETURNING id
+    `;
+    return { changes: result.rowCount, lastInsertRowid: result.rows[0]?.id };
+  },
+
+  findById: async (id: number): Promise<WaitlistEntry | undefined> => {
+    const result = await sql`
+      SELECT * FROM waitlist WHERE id = ${id}
+    `;
+    return result.rows[0] as WaitlistEntry | undefined;
+  },
+
+  findByUserSession: async (userSession: string): Promise<WaitlistEntry[]> => {
+    const result = await sql`
+      SELECT * FROM waitlist 
+      WHERE user_session = ${userSession} 
+      ORDER BY priority ASC, created_at ASC
+    `;
+    return result.rows as WaitlistEntry[];
+  },
+
+  findWaiting: async (): Promise<WaitlistEntry[]> => {
+    const result = await sql`
+      SELECT * FROM waitlist 
+      WHERE status = 'waiting'
+      ORDER BY priority ASC, created_at ASC
+    `;
+    return result.rows as WaitlistEntry[];
+  },
+
+  findWaitingByUser: async (userSession: string): Promise<WaitlistEntry[]> => {
+    const result = await sql`
+      SELECT * FROM waitlist 
+      WHERE user_session = ${userSession} AND status = 'waiting'
+      ORDER BY priority ASC, created_at ASC
+    `;
+    return result.rows as WaitlistEntry[];
+  },
+
+  updateStatus: async (id: number, status: WaitlistStatus) => {
+    const result = await sql`
+      UPDATE waitlist 
+      SET status = ${status}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+    `;
+    return { changes: result.rowCount };
+  },
+
+  updateLastChecked: async (id: number) => {
+    const result = await sql`
+      UPDATE waitlist 
+      SET last_checked = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+      WHERE id = ${id}
+    `;
+    return { changes: result.rowCount };
+  },
+
+  delete: async (id: number) => {
+    const result = await sql`
+      DELETE FROM waitlist WHERE id = ${id}
+    `;
+    return { changes: result.rowCount };
+  },
+
+  deleteByUserSession: async (userSession: string) => {
+    const result = await sql`
+      DELETE FROM waitlist WHERE user_session = ${userSession}
+    `;
+    return { changes: result.rowCount };
   }
 };
 

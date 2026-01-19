@@ -1,30 +1,62 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ReCaptcha } from '@/components/auth/ReCaptcha';
-import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar } from 'lucide-react';
-import type { HocPhan, LopHocPhan } from '@/lib/types/uth';
+import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, AlertTriangle, ListPlus } from 'lucide-react';
+import type { HocPhan, LopHocPhan, DangKyHocPhan } from '@/lib/types/uth';
+import { findScheduleConflicts, classToSchedule, formatConflictMessage, type ParsedSchedule, type ScheduleConflict } from '@/lib/schedule-utils';
 
 interface ClassModalProps {
   course: HocPhan;
   classes: LopHocPhan[];
+  registeredCourses?: DangKyHocPhan[];
   isLoading: boolean;
   onClose: () => void;
   onSuccess: () => void;
 }
 
-export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: ClassModalProps) {
+export function ClassModal({ course, classes, registeredCourses = [], isLoading, onClose, onSuccess }: ClassModalProps) {
   const [selectedClass, setSelectedClass] = useState<LopHocPhan | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState('');
-  const [registrationMode, setRegistrationMode] = useState<'immediate' | 'schedule'>('immediate');
+  const [registrationMode, setRegistrationMode] = useState<'immediate' | 'schedule' | 'waitlist'>('immediate');
   const [isRegistering, setIsRegistering] = useState(false);
   const [isScheduling, setIsScheduling] = useState(false);
+  const [isAddingWaitlist, setIsAddingWaitlist] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+  const [conflicts, setConflicts] = useState<ScheduleConflict[]>([]);
 
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+
+  // Check for schedule conflicts when selecting a class
+  useEffect(() => {
+    if (!selectedClass || registeredCourses.length === 0) {
+      setConflicts([]);
+      return;
+    }
+
+    // Parse registered courses to schedules
+    // Note: In real implementation, you'd need schedule info from API
+    // For now, we'll create mock schedules based on class codes
+    const registeredSchedules: ParsedSchedule[] = registeredCourses.map(rc => ({
+      classCode: rc.maLopHocPhan,
+      courseName: rc.tenMonHoc,
+      timeSlots: [], // Would need actual schedule data
+      raw: ''
+    }));
+
+    // Parse selected class schedule
+    const newSchedule = classToSchedule(
+      selectedClass.maLopHocPhan,
+      course.tenHocPhan,
+      '' // Would need actual schedule string
+    );
+
+    const detectedConflicts = findScheduleConflicts(newSchedule, registeredSchedules);
+    setConflicts(detectedConflicts);
+  }, [selectedClass, registeredCourses, course.tenHocPhan]);
 
   const handleRegister = async () => {
     if (!selectedClass) { setError('Vui lòng chọn lớp học phần'); return; }
@@ -89,11 +121,44 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
     }
   };
 
+  const handleAddWaitlist = async () => {
+    if (!selectedClass) { setError('Vui lòng chọn lớp học phần'); return; }
+    setIsAddingWaitlist(true);
+    setError('');
+    try {
+      const response = await fetch('/api/waitlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          courseCode: course.maHocPhan,
+          courseName: course.tenHocPhan,
+          classId: selectedClass.id.toString(),
+          classCode: selectedClass.maLopHocPhan,
+          priority: 1,
+          checkInterval: 30
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setSuccess('Đã thêm vào danh sách chờ! Hệ thống sẽ tự động đăng ký khi có chỗ trống.');
+        setTimeout(() => onClose(), 2000);
+      } else {
+        setError(data.message || 'Thêm vào danh sách chờ thất bại');
+      }
+    } catch {
+      setError('Lỗi kết nối server');
+    } finally {
+      setIsAddingWaitlist(false);
+    }
+  };
+
   const getMinDateTime = () => {
     const now = new Date();
     now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
     return now.toISOString().slice(0, 16);
   };
+
+  const isClassFull = selectedClass && !selectedClass.choDangKy;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
@@ -122,6 +187,21 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
             </div>
           )}
 
+          {/* Schedule Conflict Warning */}
+          {conflicts.length > 0 && (
+            <div className="p-2 sm:p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded text-xs sm:text-sm">
+              <div className="flex items-center gap-2 font-medium mb-1">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                Cảnh báo xung đột lịch học!
+              </div>
+              <ul className="list-disc list-inside space-y-1 text-yellow-700">
+                {conflicts.map((conflict, idx) => (
+                  <li key={idx}>{formatConflictMessage(conflict)}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {!success && (
             <>
               {/* Mode Selection */}
@@ -130,20 +210,28 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                 <div className="flex gap-2">
                   <button
                     onClick={() => setRegistrationMode('immediate')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
                       registrationMode === 'immediate' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img src="touch.png" width={20} alt="" />
+                    <img src="touch.png" width={25} alt="" />
                      ĐK ngay</button>
                   <button
                     onClick={() => setRegistrationMode('schedule')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
                       registrationMode === 'schedule' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <img src="calendar.png" width={20} alt="" />
+                    <img src="calendar.png" width={25} alt="" />
                      Hẹn lịch</button>
+                  <button
+                    onClick={() => setRegistrationMode('waitlist')}
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
+                      registrationMode === 'waitlist' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <img src="hourglass.png" width={25} alt="" />
+                     Chờ slot</button>
                 </div>
               </div>
 
@@ -163,6 +251,16 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                 </div>
               )}
 
+              {/* Waitlist Info */}
+              {registrationMode === 'waitlist' && (
+                <div className="p-3 bg-red-100 border-2 border-orange-300 rounded text-xs sm:text-sm text-orange-800">
+                  <p className="font-medium mb-1 flex items-center gap-2">
+                    <img src="loading.png" width={20} className="animate-spin [animation-duration:2s]" alt="" />
+                    Chế độ Waitlist</p>
+                  <p>Hệ thống sẽ tự động kiểm tra và đăng ký khi lớp có chỗ trống. Bạn hãy cài đặt thông báo để theo dõi kịp thời.</p>
+                </div>
+              )}
+
               {/* Class List */}
               {isLoading ? (
                 <div className="flex items-center justify-center py-6 sm:py-8 text-gray-500 text-sm">
@@ -179,12 +277,14 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                     {classes.map((c) => {
                       const canReg = c.choDangKy !== false;
                       const selected = selectedClass?.id === c.id;
+                      // In waitlist mode, allow selecting full classes
+                      const clickable = registrationMode === 'waitlist' || canReg;
                       return (
                         <div
                           key={c.id}
-                          onClick={() => canReg && setSelectedClass(c)}
+                          onClick={() => clickable && setSelectedClass(c)}
                           className={`p-2 sm:p-3 border rounded flex items-center justify-between transition ${
-                            !canReg ? 'opacity-50 cursor-not-allowed bg-gray-50' :
+                            !clickable ? 'opacity-50 cursor-not-allowed bg-gray-50' :
                             selected ? 'border-blue-500 bg-blue-50 cursor-pointer' :
                             'border-gray-200 hover:border-blue-300 cursor-pointer'
                           }`}
@@ -214,7 +314,7 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
               )}
 
               {/* reCAPTCHA */}
-              {recaptchaSiteKey && selectedClass && registrationMode === 'immediate' && (
+              {recaptchaSiteKey && selectedClass && registrationMode === 'immediate' && !isClassFull && (
                 <div className="transform scale-90 sm:scale-100 origin-left">
                   <ReCaptcha siteKey={recaptchaSiteKey} onVerify={setRecaptchaToken} onExpire={() => setRecaptchaToken('')} />
                 </div>
@@ -226,18 +326,26 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                 {registrationMode === 'immediate' ? (
                   <Button
                     onClick={handleRegister}
-                    disabled={!selectedClass || isRegistering || Boolean(recaptchaSiteKey && !recaptchaToken)}
+                    disabled={!selectedClass || isRegistering || Boolean(recaptchaSiteKey && !recaptchaToken) || !!isClassFull}
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-2"
                   >
                     {isRegistering ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang ĐK...</> : <><CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Đăng ký</>}
                   </Button>
-                ) : (
+                ) : registrationMode === 'schedule' ? (
                   <Button
                     onClick={handleSchedule}
                     disabled={!selectedClass || !scheduleTime || isScheduling}
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm py-2"
                   >
                     {isScheduling ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang lịch...</> : <><Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Lên lịch</>}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleAddWaitlist}
+                    disabled={!selectedClass || isAddingWaitlist}
+                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm py-2"
+                  >
+                    {isAddingWaitlist ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang thêm...</> : <><ListPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Thêm waitlist</>}
                   </Button>
                 )}
               </div>
