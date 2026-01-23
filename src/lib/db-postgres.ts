@@ -141,6 +141,54 @@ export async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_consent_session ON consent_logs(session_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_consent_student ON consent_logs(student_id)`;
 
+    // ============ ADMIN TABLES ============
+
+    // Login history table - Lịch sử đăng nhập của users
+    await sql`
+      CREATE TABLE IF NOT EXISTS login_history (
+        id SERIAL PRIMARY KEY,
+        student_id TEXT NOT NULL,
+        student_name TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        login_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        success BOOLEAN DEFAULT true,
+        error_message TEXT
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_login_history_student ON login_history(student_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_login_history_time ON login_history(login_time DESC)`;
+
+    // Allowed users table - Whitelist MSSV được phép sử dụng
+    await sql`
+      CREATE TABLE IF NOT EXISTS allowed_users (
+        id SERIAL PRIMARY KEY,
+        student_id TEXT UNIQUE NOT NULL,
+        student_name TEXT,
+        note TEXT,
+        is_active BOOLEAN DEFAULT true,
+        added_by TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_student ON allowed_users(student_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_active ON allowed_users(is_active)`;
+
+    // Admin sessions table - Lưu session admin
+    await sql`
+      CREATE TABLE IF NOT EXISTS admin_sessions (
+        id SERIAL PRIMARY KEY,
+        session_token TEXT UNIQUE NOT NULL,
+        ip_address TEXT,
+        user_agent TEXT,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_admin_sessions_token ON admin_sessions(session_token)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at)`;
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);

@@ -3,6 +3,7 @@ import { RecaptchaService } from '@/lib/services/recaptcha';
 import { getUTHApi } from '@/lib/services/uth-api';
 import { userConfigDb } from '@/lib/db-postgres';
 import { generateUserSession, getRequiredEnv, getOptionalEnv } from '@/lib/utils';
+import { sql } from '@vercel/postgres';
 
 interface LoginRequestBody {
   username: string;
@@ -10,7 +11,57 @@ interface LoginRequestBody {
   recaptchaToken: string;
 }
 
+// Ghi lịch sử đăng nhập
+async function logLoginHistory(
+  studentId: string,
+  studentName: string | null,
+  ipAddress: string,
+  userAgent: string,
+  success: boolean,
+  errorMessage?: string
+) {
+  try {
+    await sql`
+      INSERT INTO login_history (student_id, student_name, ip_address, user_agent, success, error_message)
+      VALUES (${studentId}, ${studentName}, ${ipAddress}, ${userAgent}, ${success}, ${errorMessage || null})
+    `;
+  } catch (e) {
+    console.error('Failed to log login history:', e);
+  }
+}
+
+// Kiểm tra whitelist
+async function checkWhitelist(studentId: string): Promise<boolean> {
+  try {
+    // Kiểm tra xem bảng có dữ liệu không
+    const countResult = await sql`SELECT COUNT(*) as count FROM allowed_users WHERE is_active = true`;
+    const totalActive = parseInt(countResult.rows[0]?.count || '0');
+    
+    // Nếu whitelist trống, cho phép tất cả
+    if (totalActive === 0) {
+      return true;
+    }
+
+    // Kiểm tra MSSV có trong whitelist không
+    const result = await sql`
+      SELECT * FROM allowed_users 
+      WHERE student_id = ${studentId} AND is_active = true
+    `;
+    return result.rows.length > 0;
+  } catch (e) {
+    console.error('Failed to check whitelist:', e);
+    // Nếu lỗi, cho phép (tránh block tất cả)
+    return true;
+  }
+}
+
 export async function POST(request: NextRequest) {
+  // Lấy IP và User Agent để log
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const ipAddress = forwardedFor?.split(',')[0]?.trim() || realIp || 'unknown';
+  const userAgent = request.headers.get('user-agent') || 'unknown';
+
   try {
     const body: LoginRequestBody = await request.json();
     const { username, password, recaptchaToken } = body;
@@ -20,6 +71,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Thiếu thông tin đăng nhập' },
         { status: 400 }
+      );
+    }
+
+    // Kiểm tra whitelist TRƯỚC khi đăng nhập UTH
+    const isAllowed = await checkWhitelist(username);
+    if (!isAllowed) {
+      // Log failed attempt
+      await logLoginHistory(username, null, ipAddress, userAgent, false, 'Không có quyền truy cập');
+      return NextResponse.json(
+        { success: false, message: 'Tài khoản chưa được cấp quyền sử dụng hệ thống. Vui lòng liên hệ admin.' },
+        { status: 403 }
       );
     }
 
@@ -48,11 +110,25 @@ export async function POST(request: NextRequest) {
     });
 
     if (!loginResult.response.success) {
+      // Log failed login
+      await logLoginHistory(username, null, ipAddress, userAgent, false, loginResult.response.message || 'Sai thông tin đăng nhập');
       return NextResponse.json(
         { success: false, message: loginResult.response.message || 'Đăng nhập thất bại' },
         { status: 401 }
       );
     }
+
+    // Lấy thông tin sinh viên để log
+    let studentName = null;
+    try {
+      const studentInfo = await uthApi.getStudentInfo();
+      studentName = studentInfo ? `${studentInfo.hoDem} ${studentInfo.ten}`.trim() : null;
+    } catch (e) {
+      // Ignore, just for logging
+    }
+
+    // Log successful login
+    await logLoginHistory(username, studentName, ipAddress, userAgent, true);
 
     // Use username as session key (so data persists across logins)
     // This way, when user logs in again, their schedules and settings are preserved

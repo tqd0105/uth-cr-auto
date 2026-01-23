@@ -210,7 +210,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                 <div className="flex gap-2">
                   <button
                     onClick={() => setRegistrationMode('immediate')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'immediate' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -218,7 +218,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                      ĐK ngay</button>
                   <button
                     onClick={() => setRegistrationMode('schedule')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'schedule' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
@@ -226,7 +226,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                      Hẹn lịch</button>
                   <button
                     onClick={() => setRegistrationMode('waitlist')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-sm sm:text-sm font-medium transition ${
+                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'waitlist' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >

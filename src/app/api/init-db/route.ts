@@ -32,7 +32,20 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json({
-    message: 'Use POST to initialize database'
-  });
+  // Cho phép GET để dễ init từ trình duyệt
+  try {
+    await initDatabase();
+
+    return NextResponse.json({
+      success: true,
+      message: 'Database initialized successfully'
+    });
+
+  } catch (error) {
+    console.error('Database init error:', error);
+    return NextResponse.json(
+      { success: false, message: error instanceof Error ? error.message : 'Initialization failed' },
+      { status: 500 }
+    );
+  }
 }
