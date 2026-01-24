@@ -12,7 +12,9 @@ import {
   TrendingUp,
   Clock,
   UserCheck,
-  FileWarning
+  FileWarning,
+  Activity,
+  XCircle
 } from 'lucide-react';
 
 // Import các components quản lý
@@ -20,17 +22,28 @@ import { UsersManager } from '@/components/admin/UsersManager';
 import { ConsentsManager } from '@/components/admin/ConsentsManager';
 import { ReportsManager } from '@/components/admin/ReportsManager';
 import { WhitelistManager } from '@/components/admin/WhitelistManager';
+import { AccessRequestsManager } from '@/components/admin/AccessRequestsManager';
+
+interface RecentUser {
+  student_id: string;
+  student_name: string | null;
+  login_time: string;
+  success: boolean;
+}
 
 interface Stats {
   totalUsers: number;
   todayLogins: number;
   totalConsents: number;
+  totalLogins: number;
+  failedLoginsToday: number;
   reports: { total: number; pending: number };
   whitelist: { total: number; active: number };
-  recentLogins: { date: string; count: number }[];
+  accessRequests: { total: number; pending: number };
+  recentUsers: RecentUser[];
 }
 
-type TabType = 'dashboard' | 'users' | 'consents' | 'reports' | 'whitelist';
+type TabType = 'dashboard' | 'users' | 'consents' | 'reports' | 'whitelist' | 'requests';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -93,6 +106,7 @@ export default function AdminDashboardPage() {
   const tabs = [
     { id: 'dashboard' as TabType, label: 'Tổng quan', icon: TrendingUp },
     { id: 'users' as TabType, label: 'Người dùng', icon: Users },
+    { id: 'requests' as TabType, label: 'Yêu cầu', icon: UserCheck },
     { id: 'consents' as TabType, label: 'Đồng ý', icon: FileCheck },
     { id: 'reports' as TabType, label: 'Báo cáo', icon: AlertTriangle },
     { id: 'whitelist' as TabType, label: 'Whitelist', icon: Shield },
@@ -138,6 +152,7 @@ export default function AdminDashboardPage() {
           <DashboardOverview stats={stats} isLoading={isLoading} onRefresh={fetchStats} />
         )}
         {activeTab === 'users' && <UsersManager />}
+        {activeTab === 'requests' && <AccessRequestsManager />}
         {activeTab === 'consents' && <ConsentsManager />}
         {activeTab === 'reports' && <ReportsManager />}
         {activeTab === 'whitelist' && <WhitelistManager />}
@@ -192,17 +207,47 @@ function DashboardOverview({
           color="green"
         />
         <StatCard
-          icon={FileCheck}
-          label="Đã đồng ý"
-          value={stats?.totalConsents || 0}
+          icon={Activity}
+          label="Tổng lượt đăng nhập"
+          value={stats?.totalLogins || 0}
           color="purple"
+        />
+        <StatCard
+          icon={XCircle}
+          label="Đăng nhập thất bại (hôm nay)"
+          value={stats?.failedLoginsToday || 0}
+          color="orange"
+          highlight={(stats?.failedLoginsToday || 0) > 5}
+        />
+      </div>
+
+      {/* Second Row Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          icon={FileCheck}
+          label="Đã đồng ý điều khoản"
+          value={stats?.totalConsents || 0}
+          color="blue"
+        />
+        <StatCard
+          icon={UserCheck}
+          label="Yêu cầu chờ duyệt"
+          value={stats?.accessRequests?.pending || 0}
+          color="green"
+          highlight={(stats?.accessRequests?.pending || 0) > 0}
         />
         <StatCard
           icon={FileWarning}
           label="Báo cáo chờ xử lý"
           value={stats?.reports?.pending || 0}
           color="orange"
-          highlight={stats?.reports?.pending ? stats.reports.pending > 0 : false}
+          highlight={(stats?.reports?.pending || 0) > 0}
+        />
+        <StatCard
+          icon={Shield}
+          label="Whitelist đang hoạt động"
+          value={stats?.whitelist?.active || 0}
+          color="purple"
         />
       </div>
 
@@ -250,30 +295,57 @@ function DashboardOverview({
         </div>
       </div>
 
-      {/* Recent Logins Chart (Simple) */}
-      {stats?.recentLogins && stats.recentLogins.length > 0 && (
+      {/* Recent Users & Access Requests */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Recent Users */}
         <div className="bg-gray-800 rounded-lg p-4">
-          <h3 className="text-sm font-medium text-gray-400 mb-4">Đăng nhập 7 ngày gần đây</h3>
-          <div className="flex items-end gap-2 h-32">
-            {stats.recentLogins.reverse().map((day, index) => {
-              const maxCount = Math.max(...stats.recentLogins.map(d => Number(d.count)));
-              const height = maxCount > 0 ? (Number(day.count) / maxCount) * 100 : 0;
-              return (
-                <div key={index} className="flex-1 flex flex-col items-center gap-1">
-                  <span className="text-xs text-gray-400">{day.count}</span>
-                  <div 
-                    className="w-full bg-blue-600 rounded-t transition-all"
-                    style={{ height: `${Math.max(height, 5)}%` }}
-                  ></div>
-                  <span className="text-xs text-gray-500">
-                    {new Date(day.date).toLocaleDateString('vi-VN', { weekday: 'short' })}
-                  </span>
+          <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            Người dùng gần đây
+          </h3>
+          <div className="space-y-2">
+            {stats?.recentUsers && stats.recentUsers.length > 0 ? (
+              stats.recentUsers.map((user, index) => (
+                <div key={index} className="flex items-center justify-between py-2 border-b border-gray-700 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${user.success ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div>
+                      <p className="text-sm text-white font-mono">{user.student_id}</p>
+                      <p className="text-xs text-gray-500">{user.student_name || 'Không rõ tên'}</p>
+                    </div>
+                  </div>
                 </div>
-              );
-            })}
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-4">Chưa có người dùng</p>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Access Requests Summary */}
+        <div className="bg-gray-800 rounded-lg p-4">
+          <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center gap-2">
+            <UserCheck className="w-4 h-4" />
+            Yêu cầu cấp quyền
+          </h3>
+          <div className="flex items-center gap-4 mb-3">
+            <div>
+              <p className="text-2xl font-bold text-yellow-500">{stats?.accessRequests?.pending || 0}</p>
+              <p className="text-xs text-gray-500">Chờ duyệt</p>
+            </div>
+            <div className="h-8 w-px bg-gray-700"></div>
+            <div>
+              <p className="text-2xl font-bold text-gray-500">{stats?.accessRequests?.total || 0}</p>
+              <p className="text-xs text-gray-500">Tổng cộng</p>
+            </div>
+          </div>
+          {(stats?.accessRequests?.pending || 0) > 0 && (
+            <p className="text-xs text-yellow-500">
+              ⚠ Có {stats?.accessRequests?.pending} yêu cầu đang chờ bạn duyệt
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

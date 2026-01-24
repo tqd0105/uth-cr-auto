@@ -90,14 +90,23 @@ export function UsersManager() {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date + 'Z').toLocaleString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZone: 'Asia/Ho_Chi_Minh'
-    });
+    if (!date) return '-';
+    try {
+      // Handle both ISO string and timestamp formats
+      const dateStr = date.includes('T') ? date : date.replace(' ', 'T');
+      const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z');
+      if (isNaN(d.getTime())) return '-';
+      return d.toLocaleString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'Asia/Ho_Chi_Minh'
+      });
+    } catch {
+      return '-';
+    }
   };
 
   const parseUserAgent = (ua: string) => {

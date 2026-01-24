@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ReCaptcha } from './ReCaptcha';
+import { AccessRequestModal } from './AccessRequestModal';
 import { Loader2, User, Lock, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface LoginFormProps {
@@ -20,6 +21,8 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showAccessRequestModal, setShowAccessRequestModal] = useState(false);
+  const [blockedStudentId, setBlockedStudentId] = useState('');
 
   const handleRecaptchaVerify = useCallback((token: string) => {
     setRecaptchaToken(token);
@@ -104,7 +107,14 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
           router.push('/dashboard');
         }, 1000);
       } else {
-        setError(data.message || 'Đăng nhập thất bại');
+        // Check if blocked by whitelist (403)
+        if (response.status === 403) {
+          setBlockedStudentId(username.trim());
+          setShowAccessRequestModal(true);
+          setError('');
+        } else {
+          setError(data.message || 'Đăng nhập thất bại');
+        }
         // Reset reCAPTCHA on error
         setRecaptchaToken('');
       }
@@ -221,6 +231,14 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
           </p>
         </form>
       </CardContent>
+
+      {/* Access Request Modal */}
+      {showAccessRequestModal && (
+        <AccessRequestModal
+          studentId={blockedStudentId}
+          onClose={() => setShowAccessRequestModal(false)}
+        />
+      )}
     </Card>
   );
 }

@@ -42,26 +42,36 @@ export async function GET(request: NextRequest) {
       FROM allowed_users
     `;
 
-    // Recent logins (last 7 days) - Generate all 7 days
-    const recentLoginsResult = await sql`
-      WITH date_series AS (
-        SELECT generate_series(
-          CURRENT_DATE - INTERVAL '6 days',
-          CURRENT_DATE,
-          '1 day'::interval
-        )::date as date
-      )
+    // Access requests stats
+    const accessRequestsResult = await sql`
       SELECT 
-        ds.date::text,
-        COALESCE(COUNT(lh.id), 0)::integer as count
-      FROM date_series ds
-      LEFT JOIN login_history lh 
-        ON DATE(lh.login_time AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Ho_Chi_Minh') = ds.date
-      GROUP BY ds.date
-      ORDER BY ds.date ASC
+        COUNT(*) as total,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending
+      FROM access_requests
     `;
 
-    console.log('Recent logins data:', recentLoginsResult.rows);
+    // Recent users (last 5 users logged in)
+    const recentUsersResult = await sql`
+      SELECT DISTINCT ON (student_id) 
+        student_id, 
+        student_name, 
+        login_time,
+        success
+      FROM login_history
+      ORDER BY student_id, login_time DESC
+      LIMIT 5
+    `;
+
+    // Total logins (all time)
+    const totalLoginsResult = await sql`
+      SELECT COUNT(*) as total FROM login_history WHERE success = true
+    `;
+
+    // Failed logins today
+    const failedLoginsResult = await sql`
+      SELECT COUNT(*) as total FROM login_history 
+      WHERE login_time >= CURRENT_DATE AND success = false
+    `;
 
     return NextResponse.json({
       success: true,
@@ -69,6 +79,8 @@ export async function GET(request: NextRequest) {
         totalUsers: parseInt(usersResult.rows[0]?.total || '0'),
         todayLogins: parseInt(todayLoginsResult.rows[0]?.total || '0'),
         totalConsents: parseInt(consentsResult.rows[0]?.total || '0'),
+        totalLogins: parseInt(totalLoginsResult.rows[0]?.total || '0'),
+        failedLoginsToday: parseInt(failedLoginsResult.rows[0]?.total || '0'),
         reports: {
           total: parseInt(reportsResult.rows[0]?.total || '0'),
           pending: parseInt(reportsResult.rows[0]?.pending || '0')
@@ -77,7 +89,11 @@ export async function GET(request: NextRequest) {
           total: parseInt(whitelistResult.rows[0]?.total || '0'),
           active: parseInt(whitelistResult.rows[0]?.active || '0')
         },
-        recentLogins: recentLoginsResult.rows
+        accessRequests: {
+          total: parseInt(accessRequestsResult.rows[0]?.total || '0'),
+          pending: parseInt(accessRequestsResult.rows[0]?.pending || '0')
+        },
+        recentUsers: recentUsersResult.rows
       }
     });
   } catch (error) {

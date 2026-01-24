@@ -189,6 +189,26 @@ export async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_admin_sessions_token ON admin_sessions(session_token)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at)`;
 
+    // Access requests table - Yêu cầu cấp quyền truy cập
+    await sql`
+      CREATE TABLE IF NOT EXISTS access_requests (
+        id SERIAL PRIMARY KEY,
+        student_id TEXT NOT NULL,
+        student_name TEXT NOT NULL,
+        email TEXT,
+        reason TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        admin_note TEXT,
+        ip_address TEXT,
+        user_agent TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        reviewed_at TIMESTAMP,
+        reviewed_by TEXT
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_access_requests_student ON access_requests(student_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_access_requests_status ON access_requests(status)`;
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);

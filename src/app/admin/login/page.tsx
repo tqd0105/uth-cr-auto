@@ -42,10 +42,12 @@ export default function AdminLoginPage() {
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg p-6 shadow-xl">
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center items-center gap-2 mb-6">
             <div className="w-12 h-12 bg-gray-700 rounded-full flex items-center justify-center">
               <Lock className="w-6 h-6 text-gray-400" />
+              
             </div>
+            <span className=" text-gray-300 font-semibold">ADMIN</span>
           </div>
 
           {error && (
