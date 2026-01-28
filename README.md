@@ -20,6 +20,51 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Variables
+
+Create a `.env.local` file with the following variables:
+
+```bash
+# SMTP Configuration (Gmail)
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+
+# App URL (for email links)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional: Cron job secret for schedule notifications
+CRON_SECRET=your-secret-key-here
+```
+
+## Schedule Notification Cron Job
+
+To enable automatic schedule notifications, set up a cron job to call the notification endpoint:
+
+### Using crontab (Linux/Mac)
+
+```bash
+# Run every 5 minutes
+*/5 * * * * curl -X POST "http://localhost:3000/api/schedule/notifications/send" -H "Authorization: Bearer your-secret-key"
+```
+
+### Using Vercel Cron Jobs
+
+Add to `vercel.json`:
+```json
+{
+  "crons": [
+    {
+      "path": "/api/schedule/notifications/send",
+      "schedule": "*/5 * * * *"
+    }
+  ]
+}
+```
+
+### Using external cron services
+
+Services like [cron-job.org](https://cron-job.org), [EasyCron](https://www.easycron.com/), or [Render](https://render.com) can call your endpoint periodically.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

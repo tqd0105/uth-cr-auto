@@ -12,6 +12,7 @@ import {
   RefreshCw,
   ListX
 } from 'lucide-react';
+import { useProStatus, ProFeature } from '@/hooks/useProStatus';
 
 interface WaitlistEntry {
   id: number;
@@ -29,9 +30,11 @@ interface WaitlistEntry {
 
 interface WaitlistManagerProps {
   onRefresh?: () => void;
+  onOpenDonate?: () => void;
 }
 
-export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
+export function WaitlistManager({ onRefresh, onOpenDonate }: WaitlistManagerProps) {
+  const { isPro, loading: proLoading } = useProStatus();
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isChecking, setIsChecking] = useState(false);
@@ -139,6 +142,35 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
           <p className="text-sm text-gray-500 mt-2">Đang tải...</p>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Nếu không phải Pro, hiển thị giao diện locked
+  if (!proLoading && !isPro) {
+    return (
+      <ProFeature 
+        feature="Chờ slot" 
+        description="Tự động đăng ký khi lớp học phần có slot trống. Không bỏ lỡ cơ hội!"
+        onUpgrade={onOpenDonate}
+      >
+        <div className="">
+          {/* Mock waitlist UI */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Danh sách chờ (0)
+            </h3>
+            <Button disabled size="sm" className="bg-orange-600">
+              <RefreshCw className="w-4 h-4 mr-1" />Kiểm tra ngay
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <Clock className="w-12 h-12 mx-auto text-gray-300 mb-3" />
+              <p className="text-gray-500">Chức năng chờ slot</p>
+            </CardContent>
+          </Card>
+        </div>
+      </ProFeature>
     );
   }
 

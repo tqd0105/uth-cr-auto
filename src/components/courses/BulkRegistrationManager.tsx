@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { X, Clock, Calendar, CheckSquare, Square, Loader2, AlertCircle, Users, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useProStatus, ProLockedScreen } from '@/hooks/useProStatus';
 import type { HocPhan, LopHocPhan } from '@/lib/types/uth';
 
 interface BulkRegistrationManagerProps {
   onClose: () => void;
   selectedCourses: HocPhan[];
   defaultMode?: 'immediate' | 'schedule';
+  onOpenDonate?: () => void;
 }
 
 interface CourseWithClasses {
@@ -20,7 +22,8 @@ interface CourseWithClasses {
   error?: string;
 }
 
-export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode = 'immediate' }: BulkRegistrationManagerProps) {
+export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode = 'immediate', onOpenDonate }: BulkRegistrationManagerProps) {
+  const { isPro, loading: proLoading } = useProStatus();
   const [coursesData, setCoursesData] = useState<CourseWithClasses[]>([]);
   const [scheduleTime, setScheduleTime] = useState('');
   const [registrationMode, setRegistrationMode] = useState<'schedule' | 'immediate'>(defaultMode);
@@ -28,6 +31,21 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Nếu không phải Pro, hiển thị màn hình locked
+  if (!proLoading && !isPro) {
+    return (
+      <ProLockedScreen
+        feature="Đăng ký nhiều lớp cùng lúc"
+        description="Chọn và đăng ký nhiều lớp học phần cùng một lúc, tiết kiệm thời gian khi đăng ký!"
+        onUpgrade={() => {
+          onClose();
+          onOpenDonate?.();
+        }}
+        onClose={onClose}
+      />
+    );
+  }
 
   useEffect(() => {
     // Initialize courses data

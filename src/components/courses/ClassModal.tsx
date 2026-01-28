@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ReCaptcha } from '@/components/auth/ReCaptcha';
-import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar } from 'lucide-react';
+import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, Crown } from 'lucide-react';
+import { useProStatus } from '@/hooks/useProStatus';
 import type { HocPhan, LopHocPhan } from '@/lib/types/uth';
 
 interface ClassModalProps {
@@ -12,9 +13,11 @@ interface ClassModalProps {
   isLoading: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onOpenDonate?: () => void;
 }
 
-export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: ClassModalProps) {
+export function ClassModal({ course, classes, isLoading, onClose, onSuccess, onOpenDonate }: ClassModalProps) {
+  const { isPro } = useProStatus();
   const [selectedClass, setSelectedClass] = useState<LopHocPhan | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [registrationMode, setRegistrationMode] = useState<'immediate' | 'schedule'>('immediate');
@@ -96,28 +99,50 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-lg shadow-xl overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className={`w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-lg shadow-xl overflow-hidden ${
+        isPro 
+          ? 'bg-gradient-to-b from-slate-900 to-slate-800 border border-yellow-500/30' 
+          : 'bg-white'
+      }`}>
         {/* Header */}
-        <div className="bg-blue-600 text-white px-3 sm:px-5 py-3 sm:py-4 flex items-center justify-between">
+        <div className={`px-3 sm:px-5 py-3 sm:py-4 flex items-center justify-between ${
+          isPro 
+            ? 'bg-gradient-to-r from-blue-600/50 to-cyan-600/50 border-b border-yellow-500/20' 
+            : 'bg-blue-600 text-white'
+        }`}>
           <div className="min-w-0 flex-1 mr-2">
-            <h2 className="text-sm sm:text-lg font-semibold truncate">{course.tenHocPhan}</h2>
-            <p className="text-xs sm:text-sm text-blue-100">{course.maHocPhan} • {course.soTinChi} TC</p>
+            <h2 className={`text-sm sm:text-lg font-semibold truncate ${
+              isPro ? 'text-gray-100' : 'text-white'
+            }`}>{course.tenHocPhan}</h2>
+            <p className={`text-xs sm:text-sm ${isPro ? 'text-gray-300' : 'text-blue-100'}`}>{course.maHocPhan} • {course.soTinChi} TC</p>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-blue-700 rounded flex-shrink-0">
+          <button onClick={onClose} className={`p-1.5 rounded flex-shrink-0 ${
+            isPro ? 'hover:bg-white/10 text-gray-300' : 'hover:bg-blue-700 text-white'
+          }`}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className={`p-3 sm:p-5 space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto ${
+          isPro ? 'pro-scrollbar' : ''
+        }`}>
           {error && (
-            <div className="p-2 sm:p-3 bg-red-50 border border-red-200 text-red-700 rounded flex items-center gap-2 text-xs sm:text-sm">
+            <div className={`p-2 sm:p-3 rounded flex items-center gap-2 text-xs sm:text-sm ${
+              isPro 
+                ? 'bg-red-900/30 border border-red-500/30 text-red-300' 
+                : 'bg-red-50 border border-red-200 text-red-700'
+            }`}>
               <AlertCircle className="w-4 h-4 flex-shrink-0" /><span className="truncate">{error}</span>
             </div>
           )}
           {success && (
-            <div className="p-2 sm:p-3 bg-green-50 border border-green-200 text-green-700 rounded flex items-center gap-2 text-xs sm:text-sm">
+            <div className={`p-2 sm:p-3 rounded flex items-center gap-2 text-xs sm:text-sm ${
+              isPro 
+                ? 'bg-green-900/30 border border-green-500/30 text-green-300' 
+                : 'bg-green-50 border border-green-200 text-green-700'
+            }`}>
               <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
             </div>
           )}
@@ -126,22 +151,45 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
             <>
               {/* Mode Selection */}
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700">Chế độ đăng ký</label>
+                <label className={`text-xs sm:text-sm font-medium ${isPro ? 'text-gray-300' : 'text-gray-700'}`}>Chế độ đăng ký</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setRegistrationMode('immediate')}
                     className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
-                      registrationMode === 'immediate' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'
+                      registrationMode === 'immediate' 
+                        ? isPro 
+                          ? 'border-green-500 bg-green-900/30 text-green-300' 
+                          : 'border-green-500 bg-green-50 text-green-700' 
+                        : isPro 
+                          ? 'border-gray-600 hover:border-gray-500 text-gray-400' 
+                          : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <img src="touch.png" width={20} alt="" />
                      ĐK ngay</button>
                   <button
-                    onClick={() => setRegistrationMode('schedule')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
-                      registrationMode === 'schedule' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    onClick={() => {
+                      if (!isPro) {
+                        onOpenDonate?.();
+                        return;
+                      }
+                      setRegistrationMode('schedule');
+                    }}
+                    className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
+                      registrationMode === 'schedule' 
+                        ? isPro 
+                          ? 'border-blue-500 bg-blue-900/30 text-blue-300' 
+                          : 'border-blue-500 bg-blue-50 text-blue-700' 
+                        : isPro 
+                          ? 'border-gray-600 hover:border-gray-500 text-gray-400' 
+                          : 'border-gray-200 hover:border-gray-300'
+                    } ${!isPro ? 'opacity-80' : ''}`}
                   >
+                    {!isPro && (
+                      <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                        <Crown className="w-2.5 h-2.5" /> PRO
+                      </span>
+                    )}
                     <img src="calendar.png" width={20} alt="" />
                      Hẹn lịch</button>
                 </div>
@@ -150,7 +198,9 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
               {/* Schedule Time */}
               {registrationMode === 'schedule' && (
                 <div className="space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <label className={`text-xs sm:text-sm font-medium flex items-center gap-1 ${
+                    isPro ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     <Clock className="w-4 h-4" /> Thời gian
                   </label>
                   <input
@@ -158,21 +208,29 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                     value={scheduleTime}
                     onChange={(e) => setScheduleTime(e.target.value)}
                     min={getMinDateTime()}
-                    className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className={`w-full px-2 sm:px-3 py-2 border rounded focus:outline-none focus:ring-2 text-sm ${
+                      isPro 
+                        ? 'bg-slate-800 border-gray-600 text-gray-100 focus:ring-yellow-400/30 focus:border-yellow-400/50' 
+                        : 'border-gray-300 focus:ring-blue-500'
+                    }`}
                   />
                 </div>
               )}
 
               {/* Class List */}
               {isLoading ? (
-                <div className="flex items-center justify-center py-6 sm:py-8 text-gray-500 text-sm">
+                <div className={`flex items-center justify-center py-6 sm:py-8 text-sm ${
+                  isPro ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin mr-2" />Đang tải...
                 </div>
               ) : classes.length === 0 ? (
-                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">Không có lớp học phần</div>
+                <div className={`text-center py-6 sm:py-8 text-sm ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>Không có lớp học phần</div>
               ) : (
                 <div className="space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <label className={`text-xs sm:text-sm font-medium flex items-center gap-1 ${
+                    isPro ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     <Users className="w-4 h-4" /> Chọn lớp ({classes.length})
                   </label>
                   <div className="space-y-1.5 sm:space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
@@ -184,27 +242,37 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                           key={c.id}
                           onClick={() => canReg && setSelectedClass(c)}
                           className={`p-2 sm:p-3 border rounded flex items-center justify-between transition ${
-                            !canReg ? 'opacity-50 cursor-not-allowed bg-gray-50' :
-                            selected ? 'border-blue-500 bg-blue-50 cursor-pointer' :
-                            'border-gray-200 hover:border-blue-300 cursor-pointer'
+                            !canReg 
+                              ? isPro ? 'opacity-50 cursor-not-allowed bg-slate-800/50' : 'opacity-50 cursor-not-allowed bg-gray-50' 
+                              : selected 
+                                ? isPro ? 'border-blue-500 bg-blue-900/30 cursor-pointer' : 'border-blue-500 bg-blue-50 cursor-pointer' 
+                                : isPro ? 'border-gray-600 hover:border-blue-400/50 cursor-pointer' : 'border-gray-200 hover:border-blue-300 cursor-pointer'
                           }`}
                         >
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                              selected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                              selected ? 'border-blue-500 bg-blue-500' : isPro ? 'border-gray-500' : 'border-gray-300'
                             }`}>
                               {selected && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 text-xs sm:text-sm truncate">{c.maLopHocPhan}</p>
-                              <p className="text-[10px] sm:text-xs text-gray-500">{c.phanTramDangKy}% ĐK</p>
+                              <p className={`font-medium text-xs sm:text-sm truncate ${
+                                isPro ? 'text-gray-100' : 'text-gray-900'
+                              }`}>{c.maLopHocPhan}</p>
+                              <p className={`text-[10px] sm:text-xs ${isPro ? 'text-gray-400' : 'text-gray-500'}`}>{c.phanTramDangKy}% ĐK</p>
                             </div>
                           </div>
                           <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${canReg ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${
+                              canReg 
+                                ? isPro ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-700' 
+                                : isPro ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700'
+                            }`}>
                               {canReg ? 'Còn' : 'Hết'}
                             </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs bg-gray-100 text-gray-600 rounded hidden sm:inline">{c.tenTrangThai}</span>
+                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded hidden sm:inline ${
+                              isPro ? 'bg-slate-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+                            }`}>{c.tenTrangThai}</span>
                           </div>
                         </div>
                       );
@@ -221,13 +289,21 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
               )}
 
               {/* Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-                <Button onClick={onClose} variant="outline" className="flex-1 text-xs sm:text-sm py-2">Hủy</Button>
+              <div className={`flex gap-2 sm:gap-3 pt-3 sm:pt-4 border-t ${
+                isPro ? 'border-gray-700' : ''
+              }`}>
+                <Button onClick={onClose} variant="outline" className={`flex-1 text-xs sm:text-sm py-2 ${
+                  isPro ? 'border-gray-600 text-gray-300 hover:bg-slate-700 hover:border-gray-500' : ''
+                }`}>Hủy</Button>
                 {registrationMode === 'immediate' ? (
                   <Button
                     onClick={handleRegister}
                     disabled={!selectedClass || isRegistering || Boolean(recaptchaSiteKey && !recaptchaToken)}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-2"
+                    className={`flex-1 text-xs sm:text-sm py-2 ${
+                      isPro 
+                        ? 'bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white shadow-lg shadow-green-500/30' 
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
                   >
                     {isRegistering ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang ĐK...</> : <><CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Đăng ký</>}
                   </Button>
@@ -235,7 +311,11 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                   <Button
                     onClick={handleSchedule}
                     disabled={!selectedClass || !scheduleTime || isScheduling}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm py-2"
+                    className={`flex-1 text-xs sm:text-sm py-2 ${
+                      isPro 
+                        ? 'bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white shadow-lg shadow-blue-500/30' 
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                    }`}
                   >
                     {isScheduling ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang lịch...</> : <><Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Lên lịch</>}
                   </Button>

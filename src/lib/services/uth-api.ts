@@ -8,7 +8,8 @@ import type {
   StudentInfo,
   ApiResponse,
   RegistrationRequest,
-  UTHCookies
+  UTHCookies,
+  LichHoc
 } from '../types/uth';
 
 export class UTHApiService {
@@ -277,6 +278,24 @@ export class UTHApiService {
     }
 
     return data;
+  }
+
+  /**
+   * Get weekly schedule (lịch học tuần)
+   */
+  async getLichHoc(date: string): Promise<LichHoc[]> {
+    try {
+      const response = await this.authenticatedRequest<LichHoc[]>(
+        `${this.baseUrl}/lichhoc/lichTuan?date=${date}`
+      );
+      return response.body || [];
+    } catch (error) {
+      console.error('Get schedule error:', error);
+      if (error instanceof UTHApiError) {
+        throw error;
+      }
+      throw new UTHApiError('Lấy lịch học thất bại', 500);
+    }
   }
 
   /**

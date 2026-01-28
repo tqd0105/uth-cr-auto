@@ -144,3 +144,94 @@ export interface RegistrationLog {
   message: string;
   created_at: string;
 }
+
+// Lịch học tuần
+export interface LichHoc {
+  id: number;
+  ngayBatDauHoc: string;
+  tenPhong: string;
+  thu: number; // 2-8 (Thứ 2 - Chủ nhật)
+  tuTiet: number;
+  denTiet: number;
+  maLopHocPhan: string;
+  maMonHoc: string;
+  tenMonHoc: string;
+  giangVien: string | null;
+  isTamNgung: boolean;
+  tuGio: string;
+  denGio: string;
+  link: string;
+  ghiChu: string;
+  image: string;
+  nameToDisplay: string | null;
+  dateToDisplay: string | null;
+  timeToDisplay: string;
+  coSoToDisplay: string;
+  haveOutlineFile: boolean;
+  outLineDescription: string | null;
+}
+
+// Cài đặt thông báo lịch học
+export interface ScheduleNotificationSettings {
+  id?: number;
+  user_session: string;
+  email: string;
+  is_enabled: boolean;
+  notification_type: 'daily' | 'weekly';
+  notification_time: string; // HH:mm format
+  custom_title?: string;
+  send_day_before: boolean; // Gửi tối hôm trước
+  last_sent_at?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+// Nhắc nhở cho từng buổi học
+export interface ClassReminder {
+  id?: number;
+  user_session: string;
+  email: string;
+  class_id: string; // maLopHocPhan
+  class_name: string; // tenMonHoc
+  class_date: string; // YYYY-MM-DD
+  class_time: string; // HH:mm (tuGio)
+  room: string;
+  remind_before: number; // Số phút trước khi học
+  is_sent: boolean;
+  note?: string;
+  created_at?: string;
+}
+
+// Donation & Pro system
+export type DonationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface Donation {
+  id?: number;
+  user_session: string;
+  email: string;
+  student_id?: string;
+  amount: number;
+  transfer_content: string; // Nội dung chuyển khoản: UTH <email>
+  registration_period_id: number; // idDot - đợt ĐKHP được kích hoạt
+  status: DonationStatus;
+  approved_by?: string; // Admin email
+  approved_at?: string;
+  note?: string;
+  created_at?: string;
+}
+
+export interface ProStatus {
+  is_pro: boolean;
+  active_period_id?: number; // idDot hiện tại được kích hoạt
+  total_donated: number;
+  donations: Donation[];
+}
+
+// Đợt đăng ký học phần
+export interface RegistrationPeriod {
+  id: number;
+  name: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}

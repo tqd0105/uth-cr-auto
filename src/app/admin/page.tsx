@@ -14,7 +14,8 @@ import {
   UserCheck,
   FileWarning,
   Activity,
-  XCircle
+  XCircle,
+  Heart
 } from 'lucide-react';
 
 // Import các components quản lý
@@ -23,6 +24,7 @@ import { ConsentsManager } from '@/components/admin/ConsentsManager';
 import { ReportsManager } from '@/components/admin/ReportsManager';
 import { WhitelistManager } from '@/components/admin/WhitelistManager';
 import { AccessRequestsManager } from '@/components/admin/AccessRequestsManager';
+import { DonationsManager } from '@/components/admin/DonationsManager';
 
 interface RecentUser {
   student_id: string;
@@ -43,7 +45,7 @@ interface Stats {
   recentUsers: RecentUser[];
 }
 
-type TabType = 'dashboard' | 'users' | 'consents' | 'reports' | 'whitelist' | 'requests';
+type TabType = 'dashboard' | 'users' | 'consents' | 'reports' | 'whitelist' | 'requests' | 'donations';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
@@ -107,6 +109,7 @@ export default function AdminDashboardPage() {
     { id: 'dashboard' as TabType, label: 'Tổng quan', icon: TrendingUp },
     { id: 'users' as TabType, label: 'Người dùng', icon: Users },
     { id: 'requests' as TabType, label: 'Yêu cầu', icon: UserCheck },
+    { id: 'donations' as TabType, label: 'Donate', icon: Heart },
     { id: 'consents' as TabType, label: 'Đồng ý', icon: FileCheck },
     { id: 'reports' as TabType, label: 'Báo cáo', icon: AlertTriangle },
     { id: 'whitelist' as TabType, label: 'Whitelist', icon: Shield },
@@ -153,6 +156,7 @@ export default function AdminDashboardPage() {
         )}
         {activeTab === 'users' && <UsersManager />}
         {activeTab === 'requests' && <AccessRequestsManager />}
+        {activeTab === 'donations' && <DonationsManager />}
         {activeTab === 'consents' && <ConsentsManager />}
         {activeTab === 'reports' && <ReportsManager />}
         {activeTab === 'whitelist' && <WhitelistManager />}

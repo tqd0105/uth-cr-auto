@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ReCaptcha } from '@/components/auth/ReCaptcha';
-import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, AlertTriangle, ListPlus } from 'lucide-react';
+import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, AlertTriangle, ListPlus, Crown } from 'lucide-react';
+import { useProStatus } from '@/hooks/useProStatus';
 import type { HocPhan, LopHocPhan, DangKyHocPhan } from '@/lib/types/uth';
 import { findScheduleConflicts, classToSchedule, formatConflictMessage, type ParsedSchedule, type ScheduleConflict } from '@/lib/schedule-utils';
 
@@ -14,9 +15,11 @@ interface ClassModalProps {
   isLoading: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onOpenDonate?: () => void;
 }
 
-export function ClassModal({ course, classes, registeredCourses = [], isLoading, onClose, onSuccess }: ClassModalProps) {
+export function ClassModal({ course, classes, registeredCourses = [], isLoading, onClose, onSuccess, onOpenDonate }: ClassModalProps) {
+  const { isPro } = useProStatus();
   const [selectedClass, setSelectedClass] = useState<LopHocPhan | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState('');
   const [registrationMode, setRegistrationMode] = useState<'immediate' | 'schedule' | 'waitlist'>('immediate');
@@ -217,19 +220,41 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                     <img src="touch.png" width={25} alt="" />
                      ĐK ngay</button>
                   <button
-                    onClick={() => setRegistrationMode('schedule')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
+                    onClick={() => {
+                      if (!isPro) {
+                        onOpenDonate?.();
+                        return;
+                      }
+                      setRegistrationMode('schedule');
+                    }}
+                    className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'schedule' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    } ${!isPro ? 'opacity-80' : ''}`}
                   >
+                    {!isPro && (
+                      <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                        <Crown className="w-2.5 h-2.5" /> PRO
+                      </span>
+                    )}
                     <img src="calendar.png" width={25} alt="" />
                      Hẹn lịch</button>
                   <button
-                    onClick={() => setRegistrationMode('waitlist')}
-                    className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
+                    onClick={() => {
+                      if (!isPro) {
+                        onOpenDonate?.();
+                        return;
+                      }
+                      setRegistrationMode('waitlist');
+                    }}
+                    className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'waitlist' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    } ${!isPro ? 'opacity-80' : ''}`}
                   >
+                    {!isPro && (
+                      <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">
+                        <Crown className="w-2.5 h-2.5" /> PRO
+                      </span>
+                    )}
                     <img src="hourglass.png" width={25} alt="" />
                      Chờ slot</button>
                 </div>
