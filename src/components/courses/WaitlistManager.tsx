@@ -121,24 +121,24 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'waiting':
-        return <span className="px-2 py-0.5 text-xs bg-orange-100 text-orange-700 rounded">Đang chờ</span>;
+        return <span className="px-2 py-0.5 text-xs bg-orange-900/40 text-orange-300 rounded border border-orange-500/30">Đang chờ</span>;
       case 'registered':
-        return <span className="px-2 py-0.5 text-xs bg-green-100 text-green-700 rounded">Đã ĐK</span>;
+        return <span className="px-2 py-0.5 text-xs bg-green-900/40 text-green-300 rounded border border-green-500/30">Đã ĐK</span>;
       case 'cancelled':
-        return <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">Đã hủy</span>;
+        return <span className="px-2 py-0.5 text-xs bg-gray-800/40 text-gray-400 rounded border border-gray-600/30">Đã hủy</span>;
       case 'expired':
-        return <span className="px-2 py-0.5 text-xs bg-red-100 text-red-700 rounded">Hết hạn</span>;
+        return <span className="px-2 py-0.5 text-xs bg-red-900/40 text-red-300 rounded border border-red-500/30">Hết hạn</span>;
       default:
-        return <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">{status}</span>;
+        return <span className="px-2 py-0.5 text-xs bg-gray-800/40 text-gray-400 rounded border border-gray-600/30">{status}</span>;
     }
   };
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
         <CardContent className="p-6 text-center">
-          <Loader2 className="w-6 h-6 animate-spin mx-auto text-gray-400" />
-          <p className="text-sm text-gray-500 mt-2">Đang tải...</p>
+          <Loader2 className="w-6 h-6 animate-spin mx-auto text-cyan-400" />
+          <p className="text-sm text-gray-400 mt-2">Đang tải...</p>
         </CardContent>
       </Card>
     );
@@ -177,14 +177,14 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
     <div className="space-y-4">
       {/* Header Actions */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-gray-100">
           Danh sách chờ ({waitlist.filter(w => w.status === 'waiting').length})
         </h3>
         <Button
           onClick={handleCheck}
           disabled={isChecking || waitlist.filter(w => w.status === 'waiting').length === 0}
           size="sm"
-          className="bg-orange-600 hover:bg-orange-700"
+          className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white shadow-lg shadow-orange-500/20"
         >
           {isChecking ? (
             <><Loader2 className="w-4 h-4 animate-spin mr-1" />Đang kiểm tra...</>
@@ -196,23 +196,23 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
 
       {/* Messages */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded flex items-center gap-2 text-sm">
+        <div className="p-3 bg-red-900/30 border border-red-500/30 text-red-300 rounded flex items-center gap-2 text-sm backdrop-blur-sm">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />{error}
         </div>
       )}
       {success && (
-        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded flex items-center gap-2 text-sm">
+        <div className="p-3 bg-green-900/30 border border-green-500/30 text-green-300 rounded flex items-center gap-2 text-sm backdrop-blur-sm">
           <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
         </div>
       )}
 
       {/* Waitlist Items */}
       {waitlist.length === 0 ? (
-        <Card>
+        <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
           <CardContent className="p-8 text-center">
-            <ListX className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Chưa có mục nào trong danh sách chờ</p>
-            <p className="text-sm text-gray-400 mt-1">
+            <ListX className="w-12 h-12 mx-auto text-slate-500 mb-4" />
+            <p className="text-gray-300">Chưa có mục nào trong danh sách chờ</p>
+            <p className="text-sm text-gray-500 mt-1">
               Thêm lớp vào waitlist để tự động đăng ký khi có chỗ trống
             </p>
           </CardContent>
@@ -220,12 +220,12 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
       ) : (
         <div className="space-y-2">
           {waitlist.map((entry) => (
-            <Card key={entry.id} className="hover:shadow-md transition-shadow">
+            <Card key={entry.id} className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm hover:shadow-lg hover:shadow-cyan-500/10 transition-all hover:border-cyan-500/30">
               <CardContent className="p-3 sm:p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-medium text-gray-900 text-sm truncate">
+                      <h4 className="font-medium text-gray-100 text-sm truncate">
                         {entry.course_name}
                       </h4>
                       {getStatusBadge(entry.status)}
@@ -243,7 +243,7 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      className="text-red-400 border-red-500/30 hover:bg-red-900/30 hover:border-red-500/50"
                       onClick={() => handleDelete(entry.id)}
                       disabled={deletingId === entry.id}
                     >
@@ -262,7 +262,7 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
       )}
 
       {/* Info */}
-      <div className="text-xs text-gray-300 bg-slate-700/50 p-3 rounded border border-slate-600">
+      <div className="text-xs text-gray-400 bg-slate-800/50 p-3 rounded border border-slate-700/50 backdrop-blur-sm">
         💡 <strong>Tip:</strong> Hệ thống sẽ tự động kiểm tra khi bạn mở trang. 
         Bạn cũng có thể bấm "Kiểm tra ngay" để kiểm tra thủ công.
       </div>
