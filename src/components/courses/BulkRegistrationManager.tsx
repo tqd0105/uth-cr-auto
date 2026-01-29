@@ -247,8 +247,8 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
 
         <CardContent className="p-3 sm:p-5 space-y-3 sm:space-y-5 max-h-[70vh] overflow-y-auto">
           {/* Registration Mode Selection */}
-          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 bg-gray-50 rounded-lg border">
-            <h3 className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-2">
+          <div className="space-y-2 sm:space-y-3 p-3 sm:p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+            <h3 className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-2">
               <Users className="w-4 h-4 text-blue-600" />
               Chế độ đăng ký
             </h3>
@@ -257,36 +257,36 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
                 onClick={() => setRegistrationMode('immediate')}
                 className={`p-2 sm:p-3 rounded border-2 text-left transition ${
                   registrationMode === 'immediate'
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-gray-200 hover:border-emerald-300'
+                    ? 'border-emerald-500 bg-emerald-900/30'
+                    : 'border-slate-600 hover:border-emerald-500/30 text-gray-300'
                 }`}
               >
                 <div className="flex items-center justify-center gap-2 mb-0.5 sm:mb-1">
                   <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center ${
-                    registrationMode === 'immediate' ? 'border-emerald-500 bg-emerald-500' : 'border-gray-300'
+                    registrationMode === 'immediate' ? 'border-emerald-500 bg-emerald-500' : 'border-slate-600'
                   }`}>
                     {registrationMode === 'immediate' && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>}
                   </div>
-                  <span className="flex items-center gap-1 font-medium text-gray-900 text-xs sm:text-sm"><img src="touch.png" width={20} alt="" /> ĐK ngay</span>
+                  <span className="flex items-center gap-1 font-medium text-gray-100 text-xs sm:text-sm"><img src="touch.png" width={20} alt="" /> ĐK ngay</span>
                 </div>
-                <p className="text-[10px] sm:text-xs text-gray-600 hidden sm:block">Đăng ký tất cả môn ngay</p>
+                <p className="text-[10px] sm:text-xs text-gray-400 hidden sm:block">Đăng ký tất cả môn ngay</p>
               </button>
               
               <button
                 onClick={() => setRegistrationMode('schedule')}
                 className={`p-2 sm:p-3 rounded border-2 text-left transition ${
                   registrationMode === 'schedule'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-blue-300'
+                    ? 'border-blue-500 bg-blue-900/30'
+                    : 'border-slate-600 hover:border-blue-500/30 text-gray-300'
                 }`}
               >
                 <div className="flex items-center justify-center gap-2 mb-0.5 sm:mb-1">
                   <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center ${
-                    registrationMode === 'schedule' ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                    registrationMode === 'schedule' ? 'border-blue-500 bg-blue-500' : 'border-slate-600'
                   }`}>
                     {registrationMode === 'schedule' && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full"></div>}
                   </div>
-                  <span className="flex items-center gap-1 font-medium text-gray-900 text-xs sm:text-sm"><img src="calendar.png" width={20} alt="" /> Hẹn lịch</span>
+                  <span className="flex items-center gap-1 font-medium text-gray-100 text-xs sm:text-sm"><img src="calendar.png" width={20} alt="" /> Hẹn lịch</span>
                 </div>
                 <p className="text-[10px] sm:text-xs text-gray-600 hidden sm:block">Đặt thời gian ĐK tự động</p>
               </button>

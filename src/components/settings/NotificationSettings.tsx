@@ -123,8 +123,8 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <Card className="w-full max-w-md shadow-lg mx-2">
-        <CardHeader className="bg-purple-600 text-white p-3 sm:p-4">
+      <Card className="w-full max-w-md shadow-lg mx-2 bg-slate-800 border-0">
+        <CardHeader className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 min-w-0">
               <Bell className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
@@ -141,36 +141,36 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
 
         <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
           {/* Email Status */}
-          <div className="flex items-center gap-2 p-2 sm:p-3 rounded-lg bg-gray-50">
+          <div className="flex items-center gap-2 p-2 sm:p-3 rounded-lg bg-slate-700/50 border border-slate-600">
             {originalEmail ? (
               <>
-                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                <span className="text-xs sm:text-sm text-green-700">Thông báo đang bật</span>
+                <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
+                <span className="text-xs sm:text-sm text-green-300">Thông báo đang bật</span>
               </>
             ) : (
               <>
                 <BellOff className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
-                <span className="text-xs sm:text-sm text-gray-500">Thông báo đang tắt</span>
+                <span className="text-xs sm:text-sm text-gray-400">Thông báo đang tắt</span>
               </>
             )}
           </div>
 
           {/* Email Input */}
           <div className="space-y-2">
-            <label className="text-xs sm:text-sm font-medium text-gray-700">
+            <label className="text-xs sm:text-sm font-medium text-gray-300">
               Email nhận thông báo
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="example@gmail.com"
-                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 text-sm bg-slate-700 border border-slate-600 rounded-lg text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
-            <p className="text-[10px] sm:text-xs text-gray-500">
+            <p className="text-[10px] sm:text-xs text-gray-400">
               Để trống nếu không muốn nhận thông báo qua email
             </p>
           </div>
@@ -189,13 +189,13 @@ export function NotificationSettings({ onClose }: NotificationSettingsProps) {
 
           {/* Error/Success Messages */}
           {error && (
-            <div className="p-2 sm:p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-xs sm:text-sm text-red-700">{error}</p>
+            <div className="p-2 sm:p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+              <p className="text-xs sm:text-sm text-red-300">{error}</p>
             </div>
           )}
           {success && (
-            <div className="p-2 sm:p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-xs sm:text-sm text-green-700">{success}</p>
+            <div className="p-2 sm:p-3 bg-green-900/30 border border-green-700/50 rounded-lg">
+              <p className="text-xs sm:text-sm text-green-300">{success}</p>
             </div>
           )}
 

@@ -46,7 +46,7 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="bg-gradient-to-b from-slate-900 to-slate-800 border border-yellow-500/30 w-full max-w-2xl max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 flex items-center gap-3">
           <ScrollText className="w-6 h-6" />
@@ -58,12 +58,12 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
 
         {/* Content */}
         <div 
-          className="flex-1 overflow-y-auto p-6 space-y-4 text-sm text-gray-700"
+          className="flex-1 overflow-y-auto p-6 space-y-4 text-sm text-gray-300 pro-scrollbar"
           onScroll={handleScroll}
         >
           {/* Giới thiệu */}
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+          <div className="p-4 bg-blue-900/30 border border-blue-700/50 rounded-lg">
+            <h3 className="font-semibold text-blue-300 mb-2 flex items-center gap-2">
               <InfoIcon className="w-5 h-5" />
               Giới thiệu
             </h3>
@@ -75,8 +75,8 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
           </div>
 
           {/* Cảnh báo quan trọng */}
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <h3 className="font-semibold text-red-800 mb-2 flex items-center gap-2">
+          <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
+            <h3 className="font-semibold text-red-300 mb-2 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5" />
               Cảnh báo quan trọng
             </h3>
@@ -161,7 +161,7 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-4 bg-gray-50 space-y-4">
+        <div className="border-t border-gray-700 p-4 bg-slate-800/50 space-y-4">
           {/* Checkbox */}
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -169,9 +169,9 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
               checked={isChecked}
               onChange={(e) => setIsChecked(e.target.checked)}
               disabled={!hasScrolledToBottom}
-              className="mt-1 w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50"
+              className="mt-1 w-4 h-4 rounded border-slate-600 text-blue-600 focus:ring-blue-500 disabled:opacity-50 bg-slate-700"
             />
-            <span className={`text-sm ${!hasScrolledToBottom ? 'text-gray-400' : 'text-gray-700'}`}>
+            <span className={`text-sm ${!hasScrolledToBottom ? 'text-gray-400' : 'text-gray-300'}`}>
               Tôi đã đọc, hiểu rõ và <strong>đồng ý</strong> với tất cả các điều khoản sử dụng, 
               cảnh báo và rủi ro khi sử dụng ứng dụng này.
               {!hasScrolledToBottom && (
@@ -185,7 +185,7 @@ export function TermsModal({ onAccept, onDecline }: TermsModalProps) {
             <Button
               onClick={onDecline}
               variant="outline"
-              className="flex-1 border-gray-300"
+              className="flex-1 border-slate-600 text-gray-300 hover:bg-slate-700"
               disabled={isSubmitting}
             >
               <X className="w-4 h-4 mr-2" />

@@ -262,7 +262,7 @@ export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
       )}
 
       {/* Info */}
-      <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded">
+      <div className="text-xs text-gray-300 bg-slate-700/50 p-3 rounded border border-slate-600">
         💡 <strong>Tip:</strong> Hệ thống sẽ tự động kiểm tra khi bạn mở trang. 
         Bạn cũng có thể bấm "Kiểm tra ngay" để kiểm tra thủ công.
       </div>

@@ -60,14 +60,14 @@ export function CancelModal({ course, onClose, onSuccess }: CancelModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-md rounded-lg shadow-xl overflow-hidden">
+      <div className="bg-gradient-to-b from-slate-900 to-slate-800 border border-red-500/30 w-full max-w-md rounded-lg shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-red-600 text-white px-5 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-red-600/50 to-red-700/50 text-gray-100 px-5 py-4 flex items-center justify-between border-b border-red-500/30">
           <div className="flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
             <h2 className="text-lg font-semibold">Xác nhận hủy đăng ký</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-red-700 rounded">
+          <button onClick={onClose} className="p-1.5 hover:bg-red-500/20 rounded text-gray-300">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -75,16 +75,16 @@ export function CancelModal({ course, onClose, onSuccess }: CancelModalProps) {
         {/* Content */}
         <div className="p-5 space-y-4">
           {/* Warning */}
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-800 text-sm">
+          <div className="p-4 bg-red-900/30 border border-red-700/50 rounded-lg">
+            <p className="text-red-300 text-sm">
               ⚠️ Bạn đang chuẩn bị hủy đăng ký học phần. Hành động này không thể hoàn tác.
             </p>
           </div>
 
           {/* Course Info */}
-          <div className="p-4 bg-gray-50 rounded-lg space-y-2">
-            <h3 className="font-semibold text-gray-900">{course.tenMonHoc}</h3>
-            <div className="text-sm text-gray-600 space-y-1">
+          <div className="p-4 bg-slate-700/50 rounded-lg space-y-2 border border-slate-600">
+            <h3 className="font-semibold text-gray-100">{course.tenMonHoc}</h3>
+            <div className="text-sm text-gray-400 space-y-1">
               <p>📚 Mã LHP: <span className="font-medium">{course.maLopHocPhan}</span></p>
               <p>📖 Số tín chỉ: <span className="font-medium">{course.soTinChi} TC</span></p>
               <p>💰 Học phí: <span className="font-medium text-blue-600">{formatCurrency(course.mucHocPhi)}</span></p>
@@ -96,7 +96,7 @@ export function CancelModal({ course, onClose, onSuccess }: CancelModalProps) {
 
           {/* Confirmation Input */}
           <div className="space-y-2">
-            <label className="text-sm text-gray-700">
+            <label className="text-sm text-gray-300">
               Nhập <span className="font-bold text-red-600">"{expectedText}"</span> để xác nhận:
             </label>
             <input
@@ -104,14 +104,14 @@ export function CancelModal({ course, onClose, onSuccess }: CancelModalProps) {
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value.toUpperCase())}
               placeholder={`Nhập ${expectedText}`}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center font-bold tracking-widest"
+              className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 text-center font-bold tracking-widest"
               disabled={isCanceling}
             />
           </div>
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+            <div className="p-3 bg-red-900/30 border border-red-700/50 text-red-300 rounded-lg text-sm">
               {error}
             </div>
           )}

@@ -35,13 +35,13 @@ import type { LichHoc, ScheduleNotificationSettings, ClassReminder } from '@/lib
 const DAYS_OF_WEEK = ['', 'Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
 const DAY_COLORS = [
   '',
-  'bg-red-50 border-red-200', // CN
-  'bg-blue-50 border-blue-200', // T2
-  'bg-green-50 border-green-200', // T3
-  'bg-yellow-50 border-yellow-200', // T4
-  'bg-purple-50 border-purple-200', // T5
-  'bg-pink-50 border-pink-200', // T6
-  'bg-orange-50 border-orange-200' // T7
+  'bg-gradient-to-br from-red-900/40 to-red-800/30 border-red-500/40', // CN
+  'bg-gradient-to-br from-blue-900/40 to-blue-800/30 border-blue-500/40', // T2
+  'bg-gradient-to-br from-emerald-900/40 to-emerald-800/30 border-emerald-500/40', // T3
+  'bg-gradient-to-br from-yellow-900/40 to-amber-800/30 border-yellow-500/40', // T4
+  'bg-gradient-to-br from-purple-900/40 to-violet-800/30 border-purple-500/40', // T5
+  'bg-gradient-to-br from-pink-900/40 to-rose-800/30 border-pink-500/40', // T6
+  'bg-gradient-to-br from-orange-900/40 to-amber-800/30 border-orange-500/40' // T7
 ];
 
 const REMIND_OPTIONS = [
@@ -394,19 +394,27 @@ export default function SchedulePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 mx-auto mb-4 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-700">Đang tải lịch học...</p>
+          <div className="w-16 h-16 mx-auto mb-4 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin shadow-lg shadow-cyan-500/30"></div>
+          <p className="text-gray-300 text-lg">Đang tải lịch học...</p>
+          <p className="text-gray-500 text-sm mt-1">Vui lòng đợi trong giây lát</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute -bottom-40 right-1/3 w-80 h-80 bg-yellow-500/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      </div>
+      
       {/* Header */}
-      <header className="bg-white shadow-sm py-3 sticky top-0 z-40">
+      <header className="bg-slate-900/80 backdrop-blur-xl shadow-lg shadow-black/20 py-3 sticky top-0 z-40 border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -414,15 +422,17 @@ export default function SchedulePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard')}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-300 hover:text-cyan-400 hover:bg-white/5"
               >
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 <span className="hidden sm:inline">Quay lại</span>
               </Button>
-              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="h-6 w-px bg-slate-600"></div>
               <div className="flex items-center gap-2">
-                <CalendarIcon className="w-5 h-5 text-blue-600" />
-                <h1 className="text-lg font-semibold text-gray-900">Lịch học tuần</h1>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                  <CalendarIcon className="w-4 h-4 text-white" />
+                </div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Lịch học tuần</h1>
               </div>
             </div>
 
@@ -431,7 +441,7 @@ export default function SchedulePage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSettings(true)}
-                className={`text-gray-600 hover:text-gray-900 ${notificationSettings.is_enabled ? 'text-green-600' : ''}`}
+                className={`hover:bg-white/5 ${notificationSettings.is_enabled ? 'text-green-400' : 'text-gray-400 hover:text-gray-300'}`}
                 title="Cài đặt thông báo"
               >
                 {notificationSettings.is_enabled ? (
@@ -446,7 +456,7 @@ export default function SchedulePage() {
                 size="sm"
                 onClick={() => fetchSchedule(currentDate, true)}
                 disabled={isRefreshing}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-400 hover:text-cyan-400 hover:bg-white/5"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
               </Button>
@@ -456,13 +466,13 @@ export default function SchedulePage() {
       </header>
 
       {/* Week Navigation */}
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex items-center justify-between bg-white rounded-lg shadow-sm p-3">
+      <div className="max-w-7xl mx-auto px-4 py-4 relative z-10">
+        <div className="flex items-center justify-between bg-slate-800/50 backdrop-blur-sm rounded-xl shadow-lg shadow-black/20 p-3 border border-slate-700/50">
           <Button
             variant="ghost"
             size="sm"
             onClick={goToPreviousWeek}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-300 hover:text-cyan-400 hover:bg-white/5"
           >
             <ChevronLeft className="w-5 h-5" />
             <span className="hidden sm:inline">Tuần trước</span>
@@ -473,11 +483,11 @@ export default function SchedulePage() {
               variant="outline"
               size="sm"
               onClick={goToCurrentWeek}
-              className="text-xs"
+              className="text-xs border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10"
             >
               Hôm nay
             </Button>
-            <span className="font-medium text-gray-900">
+            <span className="font-medium text-gray-200">
               {getWeekRange()}
             </span>
           </div>
@@ -486,7 +496,7 @@ export default function SchedulePage() {
             variant="ghost"
             size="sm"
             onClick={goToNextWeek}
-            className="text-gray-600 hover:text-gray-900"
+            className="text-gray-300 hover:text-cyan-400 hover:bg-white/5"
           >
             <span className="hidden sm:inline">Tuần sau</span>
             <ChevronRight className="w-5 h-5" />
@@ -496,8 +506,8 @@ export default function SchedulePage() {
 
       {/* Error Message */}
       {error && (
-        <div className="max-w-7xl mx-auto px-4 mb-4">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-center gap-2">
+        <div className="max-w-7xl mx-auto px-4 mb-4 relative z-10">
+          <div className="bg-red-900/30 border border-red-500/50 text-red-300 px-4 py-3 rounded-xl flex items-center gap-2 backdrop-blur-sm">
             <AlertCircle className="w-5 h-5 flex-shrink-0" />
             <p>{error}</p>
           </div>
@@ -506,29 +516,38 @@ export default function SchedulePage() {
 
       {/* Next Class Widget & Search/Filter */}
       {schedule.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 mb-4 space-y-3">
+        <div className="max-w-7xl mx-auto px-4 mb-4 space-y-3 relative z-10">
           {/* Next Class */}
           {nextClass && (
             <div 
-              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-xl shadow-md cursor-pointer hover:from-blue-600 hover:to-blue-700 transition-all"
+              className="relative overflow-hidden bg-gradient-to-r from-cyan-600/80 via-blue-600/80 to-purple-600/80 text-white p-4 rounded-2xl shadow-xl shadow-cyan-500/20 cursor-pointer hover:shadow-cyan-500/40 transition-all duration-300 group border border-white/10 backdrop-blur-sm"
               onClick={() => openClassModal(nextClass)}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <CalendarIcon className="w-6 h-6" />
+              {/* Animated shine effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+              
+              <div className="flex items-center gap-4 relative">
+                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0 backdrop-blur-sm border border-white/20 shadow-lg">
+                  <CalendarIcon className="w-7 h-7" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-blue-100 text-xs font-medium">Buổi học tiếp theo</p>
-                  <p className="font-semibold truncate">{nextClass.tenMonHoc}</p>
-                  <div className="flex items-center gap-3 text-sm text-blue-100 mt-0.5">
-                    <span>{DAYS_OF_WEEK[nextClass.thu]}</span>
-                    <span>•</span>
-                    <span>{nextClass.tuGio} - {nextClass.denGio}</span>
-                    <span>•</span>
-                    <span>{nextClass.tenPhong || 'TBA'}</span>
+                  <p className="text-cyan-100 text-xs font-semibold uppercase tracking-wider mb-1 flex items-center gap-2">
+                    <Zap className="w-3 h-3" />
+                    Buổi học tiếp theo
+                  </p>
+                  <p className="font-bold text-lg truncate">{nextClass.tenMonHoc}</p>
+                  <div className="flex items-center gap-3 text-sm text-cyan-100 mt-1">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {DAYS_OF_WEEK[nextClass.thu]} • {nextClass.tuGio} - {nextClass.denGio}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {nextClass.tenPhong || 'TBA'}
+                    </span>
                   </div>
                 </div>
-                <ChevronRight className="w-5 h-5 text-blue-200" />
+                <ChevronRight className="w-6 h-6 text-white/70 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>
             </div>
           )}
@@ -560,28 +579,32 @@ export default function SchedulePage() {
       )}
 
       {/* Schedule Content */}
-      <main className="max-w-7xl mx-auto px-4 pb-8">
+      <main className="max-w-7xl mx-auto px-4 pb-8 relative z-10">
         {schedule.length === 0 ? (
-          <Card className="border border-gray-200">
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
             <CardContent className="py-12">
-              <div className="text-center text-gray-500">
-                <CalendarIcon className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-lg font-medium">Không có lịch học trong tuần này</p>
-                <p className="text-sm mt-1">Hãy chọn tuần khác hoặc làm mới dữ liệu</p>
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+                  <CalendarIcon className="w-10 h-10 text-slate-500" />
+                </div>
+                <p className="text-lg font-medium text-gray-300">Không có lịch học trong tuần này</p>
+                <p className="text-sm mt-1 text-gray-500">Hãy chọn tuần khác hoặc làm mới dữ liệu</p>
               </div>
             </CardContent>
           </Card>
         ) : Object.keys(filteredGroupedSchedule).length === 0 ? (
-          <Card className="border border-gray-200">
+          <Card className="border-slate-700/50 bg-slate-800/50 backdrop-blur-sm">
             <CardContent className="py-12">
-              <div className="text-center text-gray-500">
-                <Search className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                <p className="text-lg font-medium">Không tìm thấy kết quả</p>
-                <p className="text-sm mt-1">Thử tìm kiếm với từ khóa khác</p>
+              <div className="text-center">
+                <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-slate-700/50 flex items-center justify-center">
+                  <Search className="w-10 h-10 text-slate-500" />
+                </div>
+                <p className="text-lg font-medium text-gray-300">Không tìm thấy kết quả</p>
+                <p className="text-sm mt-1 text-gray-500">Thử tìm kiếm với từ khóa khác</p>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-3"
+                  className="mt-3 border-slate-600 text-gray-300 hover:bg-slate-700"
                   onClick={() => { setSearchQuery(''); setSelectedSubject(''); }}
                 >
                   Xóa bộ lọc
@@ -595,14 +618,16 @@ export default function SchedulePage() {
               const daySchedule = filteredGroupedSchedule[day] || [];
               if (daySchedule.length === 0) return null;
 
+              const dayColorDot = ['', 'bg-red-500', 'bg-blue-500', 'bg-emerald-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500'];
+
               return (
-                <Card key={day} className={`border ${DAY_COLORS[day]} shadow-sm`}>
+                <Card key={day} className={`border ${DAY_COLORS[day]} shadow-lg shadow-black/10 backdrop-blur-sm hover:scale-[1.02] transition-transform duration-300 bg-transparent`}>
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-base flex items-center gap-2">
-                      <div className={`w-2 h-2 rounded-full ${day === 1 ? 'bg-red-500' : 'bg-blue-500'}`}></div>
+                    <CardTitle className="text-base flex items-center gap-2 text-gray-100">
+                      <div className={`w-3 h-3 rounded-full ${dayColorDot[day]} shadow-lg ${day === 1 ? 'shadow-red-500/30' : 'shadow-current'}`}></div>
                       {DAYS_OF_WEEK[day]}
                     </CardTitle>
-                    <CardDescription className="text-xs">
+                    <CardDescription className="text-xs text-gray-400">
                       {daySchedule.length} buổi học
                     </CardDescription>
                   </CardHeader>
@@ -610,34 +635,37 @@ export default function SchedulePage() {
                     {daySchedule.map((item, idx) => (
                       <div 
                         key={`${item.id}-${idx}`} 
-                        className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer group relative"
+                        className="bg-slate-800/80 rounded-xl p-3 border border-slate-700/50 shadow-md hover:shadow-xl hover:shadow-cyan-500/10 hover:border-cyan-500/30 transition-all duration-300 cursor-pointer group relative overflow-hidden"
                         onClick={() => openClassModal(item)}
                       >
+                        {/* Hover glow effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/5 to-cyan-500/0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        
                         {/* Reminder indicator */}
                         {hasReminder(item.maLopHocPhan, day) && (
-                          <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-green-500/30">
                             <Bell className="w-3 h-3 text-white" />
                           </div>
                         )}
                         
-                        <div className="font-medium text-gray-900 text-sm mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
+                        <div className="font-medium text-gray-100 text-sm mb-2 line-clamp-2 group-hover:text-cyan-400 transition-colors relative z-10">
                           {item.tenMonHoc}
                         </div>
                         
-                        <div className="space-y-1.5 text-xs text-gray-600">
+                        <div className="space-y-1.5 text-xs text-gray-400 relative z-10">
                           <div className="flex items-center gap-2">
-                            <Clock className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-                            <span className="font-medium">{item.tuGio} - {item.denGio}</span>
-                            <span className="text-gray-400">|</span>
+                            <Clock className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+                            <span className="font-medium text-gray-300">{item.tuGio} - {item.denGio}</span>
+                            <span className="text-slate-600">|</span>
                             <span>Tiết {item.tuTiet} - {item.denTiet}</span>
                           </div>
                           
                           <div className="flex items-center gap-2">
-                            <MapPin className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+                            <MapPin className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                             <span>{item.tenPhong || 'Chưa xác định'}</span>
                             {/* {item.coSoToDisplay && (
                               <>
-                                <span className="text-gray-400">|</span>
+                                <span className="text-slate-600">|</span>
                                 <span className="truncate">{item.coSoToDisplay}</span>
                               </>
                             )} */}
@@ -645,19 +673,19 @@ export default function SchedulePage() {
                           
                           {item.giangVien && (
                             <div className="flex items-center gap-2">
-                              <User className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                              <User className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
                               <span className="truncate">{item.giangVien}</span>
                             </div>
                           )}
 
                           <div className="flex items-center gap-2">
-                            <BookIcon className="w-3.5 h-3.5 text-orange-500 flex-shrink-0" />
-                            <span className="truncate">{item.maLopHocPhan}</span>
+                            <BookIcon className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+                            <span className="truncate text-gray-500">{item.maLopHocPhan}</span>
                           </div>
                         </div>
 
                         {item.isTamNgung && (
-                          <div className="mt-2 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-md inline-block">
+                          <div className="mt-2 px-2 py-1 bg-red-900/50 text-red-300 text-xs rounded-md inline-block border border-red-500/30">
                             Tạm ngưng
                           </div>
                         )}
@@ -673,27 +701,27 @@ export default function SchedulePage() {
         {/* Summary Stats */}
         {schedule.length > 0 && (
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-blue-600">{schedule.length}</p>
-              <p className="text-xs text-gray-500">Tổng buổi học</p>
+            <div className="bg-gradient-to-br from-cyan-900/40 to-blue-900/40 rounded-xl p-4 border border-cyan-500/30 text-center backdrop-blur-sm shadow-lg shadow-cyan-500/10 hover:shadow-cyan-500/20 transition-shadow">
+              <p className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">{schedule.length}</p>
+              <p className="text-xs text-gray-400 mt-1">Tổng buổi học</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-green-600">
+            <div className="bg-gradient-to-br from-emerald-900/40 to-green-900/40 rounded-xl p-4 border border-emerald-500/30 text-center backdrop-blur-sm shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-shadow">
+              <p className="text-3xl font-bold bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">
                 {new Set(schedule.map(s => s.tenMonHoc)).size}
               </p>
-              <p className="text-xs text-gray-500">Môn học</p>
+              <p className="text-xs text-gray-400 mt-1">Môn học</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-purple-600">
+            <div className="bg-gradient-to-br from-purple-900/40 to-violet-900/40 rounded-xl p-4 border border-purple-500/30 text-center backdrop-blur-sm shadow-lg shadow-purple-500/10 hover:shadow-purple-500/20 transition-shadow">
+              <p className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-violet-400 bg-clip-text text-transparent">
                 {Object.keys(groupedSchedule).filter(d => groupedSchedule[Number(d)]?.length > 0).length}
               </p>
-              <p className="text-xs text-gray-500">Ngày có lịch</p>
+              <p className="text-xs text-gray-400 mt-1">Ngày có lịch</p>
             </div>
-            <div className="bg-white rounded-lg p-3 border border-gray-200 text-center">
-              <p className="text-2xl font-bold text-orange-600">
+            <div className="bg-gradient-to-br from-orange-900/40 to-amber-900/40 rounded-xl p-4 border border-orange-500/30 text-center backdrop-blur-sm shadow-lg shadow-orange-500/10 hover:shadow-orange-500/20 transition-shadow">
+              <p className="text-3xl font-bold bg-gradient-to-r from-orange-400 to-amber-400 bg-clip-text text-transparent">
                 {schedule.reduce((sum, s) => sum + (s.denTiet - s.tuTiet + 1), 0)}
               </p>
-              <p className="text-xs text-gray-500">Tổng tiết học</p>
+              <p className="text-xs text-gray-400 mt-1">Tổng tiết học</p>
             </div>
           </div>
         )}
@@ -701,33 +729,35 @@ export default function SchedulePage() {
 
       {/* Notification Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-md max-h-[90vh] overflow-y-auto animate-scale-in border border-slate-700/50">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold text-gray-900">Cài đặt thông báo lịch học</h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                    <Bell className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-lg font-bold text-gray-100">Cài đặt thông báo</h2>
                 </div>
                 <button
                   onClick={() => setShowSettings(false)}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-gray-200"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="space-y-5">
                 {/* Enable Toggle */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
                   <div className="flex items-center gap-3">
                     {notificationSettings.is_enabled ? (
-                      <Bell className="w-5 h-5 text-green-500" />
+                      <Bell className="w-5 h-5 text-green-400" />
                     ) : (
-                      <BellOff className="w-5 h-5 text-gray-400" />
+                      <BellOff className="w-5 h-5 text-gray-500" />
                     )}
                     <div>
-                      <p className="font-medium text-gray-900">Bật thông báo</p>
+                      <p className="font-medium text-gray-100">Bật thông báo</p>
                       <p className="text-xs text-gray-500">Nhận email về lịch học</p>
                     </div>
                   </div>
@@ -748,7 +778,7 @@ export default function SchedulePage() {
 
                 {/* Email */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
                     <Mail className="w-4 h-4 inline mr-1" />
                     Email nhận thông báo
                   </label>
@@ -758,23 +788,23 @@ export default function SchedulePage() {
                     value={notificationSettings.email || ''}
                     onChange={(e) => setNotificationSettings(prev => ({ ...prev, email: e.target.value }))}
                     disabled={!notificationSettings.is_enabled}
-                    className="w-full"
+                    className="w-full bg-slate-800/50 border-slate-700/50 text-gray-100 placeholder-gray-500 focus:border-cyan-500"
                   />
                 </div>
 
                 {/* Notification Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
                     Loại thông báo
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setNotificationSettings(prev => ({ ...prev, notification_type: 'daily' }))}
                       disabled={!notificationSettings.is_enabled}
-                      className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      className={`p-3 rounded-xl border text-sm font-medium transition-all ${
                         notificationSettings.notification_type === 'daily'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400'
+                          : 'border-slate-700/50 text-gray-400 hover:border-slate-600'
                       } ${!notificationSettings.is_enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       📅 Hàng ngày
@@ -782,10 +812,10 @@ export default function SchedulePage() {
                     <button
                       onClick={() => setNotificationSettings(prev => ({ ...prev, notification_type: 'weekly' }))}
                       disabled={!notificationSettings.is_enabled}
-                      className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                      className={`p-3 rounded-xl border text-sm font-medium transition-all ${
                         notificationSettings.notification_type === 'weekly'
-                          ? 'border-blue-500 bg-blue-50 text-blue-700'
-                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                          ? 'border-cyan-500 bg-cyan-500/20 text-cyan-400'
+                          : 'border-slate-700/50 text-gray-400 hover:border-slate-600'
                       } ${!notificationSettings.is_enabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       📆 Hàng tuần
@@ -800,7 +830,7 @@ export default function SchedulePage() {
 
                 {/* Notification Time */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
                     <Clock className="w-4 h-4 inline mr-1" />
                     Thời gian gửi thông báo
                   </label>
@@ -809,14 +839,14 @@ export default function SchedulePage() {
                     value={notificationSettings.notification_time || '07:00'}
                     onChange={(e) => setNotificationSettings(prev => ({ ...prev, notification_time: e.target.value }))}
                     disabled={!notificationSettings.is_enabled}
-                    className="w-full"
+                    className="w-full bg-slate-800/50 border-slate-700/50 text-gray-100 focus:border-cyan-500"
                   />
                 </div>
 
                 {/* Send Day Before */}
-                <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
                   <div>
-                    <p className="font-medium text-gray-900 text-sm">Gửi trước 1 ngày</p>
+                    <p className="font-medium text-gray-100 text-sm">Gửi trước 1 ngày</p>
                     <p className="text-xs text-gray-500">Nhận thông báo vào tối hôm trước</p>
                   </div>
                   <button
@@ -839,7 +869,7 @@ export default function SchedulePage() {
 
                 {/* Custom Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                  <label className="block text-sm font-medium text-gray-300 mb-1.5">
                     Tiêu đề email tùy chỉnh (không bắt buộc)
                   </label>
                   <Input
@@ -848,7 +878,7 @@ export default function SchedulePage() {
                     value={notificationSettings.custom_title || ''}
                     onChange={(e) => setNotificationSettings(prev => ({ ...prev, custom_title: e.target.value }))}
                     disabled={!notificationSettings.is_enabled}
-                    className="w-full"
+                    className="w-full bg-slate-800/50 border-slate-700/50 text-gray-100 placeholder-gray-500 focus:border-cyan-500"
                   />
                   <p className="text-xs text-gray-500 mt-1">
                     Mặc định: "Lịch học ngày..." hoặc "Lịch học tuần..."
@@ -857,10 +887,10 @@ export default function SchedulePage() {
 
                 {/* Status Message */}
                 {settingsMessage.text && (
-                  <div className={`p-3 rounded-lg text-sm ${
+                  <div className={`p-3 rounded-xl text-sm ${
                     settingsMessage.type === 'success' 
-                      ? 'bg-green-50 text-green-700 border border-green-200' 
-                      : 'bg-red-50 text-red-700 border border-red-200'
+                      ? 'bg-green-900/30 text-green-300 border border-green-500/30' 
+                      : 'bg-red-900/30 text-red-300 border border-red-500/30'
                   }`}>
                     {settingsMessage.text}
                   </div>
@@ -871,14 +901,14 @@ export default function SchedulePage() {
                   <Button
                     variant="outline"
                     onClick={() => setShowSettings(false)}
-                    className="flex-1"
+                    className="flex-1 border-slate-600 text-gray-300 hover:bg-slate-700"
                   >
                     Hủy
                   </Button>
                   <Button
                     onClick={handleSaveSettings}
                     disabled={isSavingSettings}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+                    className="flex-1 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg shadow-cyan-500/30"
                   >
                     {isSavingSettings ? (
                       <>
@@ -901,51 +931,51 @@ export default function SchedulePage() {
 
       {/* Class Detail Modal */}
       {showClassModal && selectedClass && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl shadow-2xl shadow-black/50 w-full max-w-lg max-h-[90vh] overflow-y-auto animate-scale-in border border-slate-700/50">
             <div className="p-6">
               {/* Header */}
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1 pr-4">
-                  <h2 className="text-lg font-semibold text-gray-900">{selectedClass.tenMonHoc}</h2>
+                  <h2 className="text-lg font-bold text-gray-100">{selectedClass.tenMonHoc}</h2>
                   <p className="text-sm text-gray-500 mt-1">{selectedClass.maLopHocPhan}</p>
                 </div>
                 <button
                   onClick={() => setShowClassModal(false)}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-gray-200"
                 >
-                  <X className="w-5 h-5 text-gray-500" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
               {/* Class Info */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4 space-y-3">
+              <div className="bg-slate-800/50 rounded-xl p-4 mb-4 space-y-3 border border-slate-700/50">
                 <div className="flex items-center gap-3 text-sm">
-                  <CalendarIcon className="w-4 h-4 text-blue-500" />
-                  <span className="font-medium">{DAYS_OF_WEEK[selectedClass.thu]}</span>
-                  <span className="text-gray-400">|</span>
-                  <span>{getClassDate(selectedClass.thu)}</span>
+                  <CalendarIcon className="w-4 h-4 text-cyan-400" />
+                  <span className="font-medium text-gray-200">{DAYS_OF_WEEK[selectedClass.thu]}</span>
+                  <span className="text-gray-600">|</span>
+                  <span className="text-gray-400">{getClassDate(selectedClass.thu)}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <Clock className="w-4 h-4 text-green-500" />
-                  <span>{selectedClass.tuGio} - {selectedClass.denGio}</span>
-                  <span className="text-gray-400">|</span>
-                  <span>Tiết {selectedClass.tuTiet} - {selectedClass.denTiet}</span>
+                  <Clock className="w-4 h-4 text-emerald-400" />
+                  <span className="text-gray-300">{selectedClass.tuGio} - {selectedClass.denGio}</span>
+                  <span className="text-gray-600">|</span>
+                  <span className="text-gray-400">Tiết {selectedClass.tuTiet} - {selectedClass.denTiet}</span>
                 </div>
                 <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="w-4 h-4 text-orange-500" />
-                  <span>{selectedClass.tenPhong || 'Chưa xác định'}</span>
+                  <MapPin className="w-4 h-4 text-orange-400" />
+                  <span className="text-gray-300">{selectedClass.tenPhong || 'Chưa xác định'}</span>
                   {selectedClass.coSoToDisplay && (
                     <>
-                      <span className="text-gray-400">|</span>
-                      <span>{selectedClass.coSoToDisplay}</span>
+                      <span className="text-gray-600">|</span>
+                      <span className="text-gray-400">{selectedClass.coSoToDisplay}</span>
                     </>
                   )}
                 </div>
                 {selectedClass.giangVien && (
                   <div className="flex items-center gap-3 text-sm">
-                    <User className="w-4 h-4 text-purple-500" />
-                    <span>{selectedClass.giangVien}</span>
+                    <User className="w-4 h-4 text-purple-400" />
+                    <span className="text-gray-300">{selectedClass.giangVien}</span>
                   </div>
                 )}
               </div>
@@ -956,7 +986,7 @@ export default function SchedulePage() {
                   href={getGoogleCalendarUrl(selectedClass)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 bg-slate-800/50 border border-slate-700/50 rounded-xl text-sm font-medium text-gray-300 hover:bg-slate-700/50 hover:border-cyan-500/30 transition-all"
                 >
                   <ExternalLink className="w-4 h-4" />
                   Thêm vào Google Calendar
@@ -965,12 +995,12 @@ export default function SchedulePage() {
 
               {/* Existing reminder check */}
               {hasReminder(selectedClass.maLopHocPhan, selectedClass.thu) ? (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-green-700 mb-2">
+                <div className="bg-green-900/30 border border-green-500/30 rounded-xl p-4">
+                  <div className="flex items-center gap-2 text-green-300 mb-2">
                     <Bell className="w-5 h-5" />
                     <span className="font-medium">Đã có nhắc nhở cho buổi học này</span>
                   </div>
-                  <p className="text-sm text-green-600">
+                  <p className="text-sm text-green-400/80">
                     Bạn sẽ nhận được email nhắc nhở trước khi buổi học bắt đầu.
                   </p>
                   {classReminders.filter(r => 
@@ -978,14 +1008,14 @@ export default function SchedulePage() {
                     r.class_date === getClassDate(selectedClass.thu)
                   ).map(reminder => (
                     <div key={reminder.id} className="mt-3 flex items-center justify-between">
-                      <span className="text-sm text-green-600">
+                      <span className="text-sm text-green-400/80">
                         Nhắc trước {REMIND_OPTIONS.find(o => o.value === reminder.remind_before)?.label || `${reminder.remind_before} phút`}
                       </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => reminder.id && handleDeleteReminder(reminder.id)}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-900/30"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -995,15 +1025,15 @@ export default function SchedulePage() {
               ) : (
                 <>
                   {/* Add Reminder Form */}
-                  <div className="border-t border-gray-200 pt-5">
-                    <h3 className="font-medium text-gray-900 mb-4 flex items-center gap-2">
-                      <Bell className="w-4 h-4 text-blue-500" />
+                  <div className="border-t border-slate-700/50 pt-5">
+                    <h3 className="font-medium text-gray-100 mb-4 flex items-center gap-2">
+                      <Bell className="w-4 h-4 text-cyan-400" />
                       Thêm nhắc nhở cho buổi học này
                     </h3>
                     
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
                           Email nhận nhắc nhở
                         </label>
                         <Input
@@ -1011,18 +1041,18 @@ export default function SchedulePage() {
                           placeholder="email@example.com"
                           value={reminderEmail}
                           onChange={(e) => setReminderEmail(e.target.value)}
-                          className="w-full"
+                          className="w-full bg-slate-800/50 border-slate-700/50 text-gray-100 placeholder:text-gray-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
                           Nhắc trước
                         </label>
                         <select
                           value={reminderBefore}
                           onChange={(e) => setReminderBefore(Number(e.target.value))}
-                          className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full px-3 py-2 border border-slate-700/50 rounded-xl bg-slate-800/50 text-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                         >
                           {REMIND_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1031,7 +1061,7 @@ export default function SchedulePage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                        <label className="block text-sm font-medium text-gray-300 mb-1.5">
                           <StickyNote className="w-4 h-4 inline mr-1" />
                           Ghi chú (không bắt buộc)
                         </label>
@@ -1040,16 +1070,16 @@ export default function SchedulePage() {
                           placeholder="Ví dụ: Nhớ mang laptop, làm bài tập..."
                           value={reminderNote}
                           onChange={(e) => setReminderNote(e.target.value)}
-                          className="w-full"
+                          className="w-full bg-slate-800/50 border-slate-700/50 text-gray-100 placeholder:text-gray-500"
                         />
                       </div>
 
                       {/* Status Message */}
                       {reminderMessage.text && (
-                        <div className={`p-3 rounded-lg text-sm ${
+                        <div className={`p-3 rounded-xl text-sm ${
                           reminderMessage.type === 'success' 
-                            ? 'bg-green-50 text-green-700 border border-green-200' 
-                            : 'bg-red-50 text-red-700 border border-red-200'
+                            ? 'bg-green-900/30 text-green-300 border border-green-500/30' 
+                            : 'bg-red-900/30 text-red-300 border border-red-500/30'
                         }`}>
                           {reminderMessage.text}
                         </div>
@@ -1058,7 +1088,7 @@ export default function SchedulePage() {
                       <Button
                         onClick={handleSaveReminder}
                         disabled={isSavingReminder || !reminderEmail}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                        className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20"
                       >
                         {isSavingReminder ? (
                           <>

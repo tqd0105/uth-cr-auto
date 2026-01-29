@@ -106,12 +106,8 @@ export function CourseList({ courses, registeredCourses = [], onRefresh, bulkMod
             key={course.id} 
             className={`shadow-sm hover:shadow-md transition-all cursor-pointer ${
               bulkMode && selectedCourses.has(course.id) 
-                ? isPro 
-                  ? 'border border-green-500/50 bg-green-900/20' 
-                  : 'border border-green-500 bg-green-50' 
-                : isPro 
-                  ? 'pro-card border-0 hover:border-yellow-400/30' 
-                  : 'border border-gray-200 hover:border-gray-300'
+                ? 'border border-green-500/50 bg-green-900/20' 
+                : 'pro-card border-0 hover:border-yellow-400/30'
             }`}
             onClick={(e) => handleCardClick(course, e)}
           >

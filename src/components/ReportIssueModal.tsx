@@ -59,11 +59,11 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white w-full max-w-lg rounded-lg shadow-xl overflow-hidden">
+      <div className="bg-slate-800 w-full max-w-lg rounded-lg shadow-xl overflow-hidden border border-slate-700">
         {/* Header */}
-        <div className="bg-blue-600 text-white px-5 py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-4 flex items-center justify-between">
           <h2 className="text-lg font-semibold">Báo cáo vấn đề</h2>
-          <button onClick={onClose} className="p-1.5 hover:bg-blue-700 rounded">
+          <button onClick={onClose} className="p-1.5 hover:bg-white/20 rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -71,14 +71,14 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
         {/* Content */}
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded flex items-center gap-2 text-sm">
+            <div className="p-3 bg-red-900/30 border border-red-700/50 text-red-300 rounded flex items-center gap-2 text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
           )}
           
           {success && (
-            <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded flex items-center gap-2 text-sm">
+            <div className="p-3 bg-green-900/30 border border-green-700/50 text-green-300 rounded flex items-center gap-2 text-sm">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
               Đã gửi báo cáo thành công! Cảm ơn bạn.
             </div>
@@ -88,14 +88,14 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
             <>
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Họ tên <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Họ tên <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 placeholder-gray-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="Nguyễn Văn A"
                   required
                 />
@@ -103,14 +103,14 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
 
               {/* Email */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Email <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 placeholder-gray-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   placeholder="email@example.com"
                   required
                 />
@@ -118,13 +118,13 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
 
               {/* Issue Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Loại vấn đề
                 </label>
                 <select
                   value={issueType}
                   onChange={(e) => setIssueType(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 >
                   <option value="bug"> Lỗi hệ thống</option>
                   <option value="feature"> Đề xuất tính năng</option>
@@ -136,13 +136,13 @@ export function ReportIssueModal({ onClose }: ReportIssueModalProps) {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Mô tả chi tiết <span className="text-red-500">*</span>
+                <label className="block text-sm font-medium text-gray-300 mb-1">
+                  Mô tả chi tiết <span className="text-red-400">*</span>
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                  className="w-full px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 placeholder-gray-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
                   rows={6}
                   placeholder="Vui lòng mô tả chi tiết vấn đề bạn gặp phải..."
                   required

@@ -164,39 +164,39 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-lg shadow-xl overflow-hidden">
+      <div className="bg-gradient-to-b from-slate-900 to-slate-800 border border-yellow-500/30 w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-lg shadow-xl overflow-hidden">
         {/* Header */}
-        <div className="bg-blue-600 text-white px-3 sm:px-5 py-3 sm:py-4 flex items-center justify-between">
+        <div className="bg-gradient-to-r from-blue-600/50 to-cyan-600/50 text-gray-100 px-3 sm:px-5 py-3 sm:py-4 flex items-center justify-between border-b border-yellow-500/20">
           <div className="min-w-0 flex-1 mr-2">
             <h2 className="text-sm sm:text-lg font-semibold truncate">{course.tenHocPhan}</h2>
-            <p className="text-xs sm:text-sm text-blue-100">{course.maHocPhan} • {course.soTinChi} TC</p>
+            <p className="text-xs sm:text-sm text-gray-300">{course.maHocPhan} • {course.soTinChi} TC</p>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-blue-700 rounded flex-shrink-0">
+          <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded flex-shrink-0 text-gray-300">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="p-3 sm:p-5 space-y-3 sm:space-y-4 max-h-[70vh] overflow-y-auto pro-scrollbar">
           {error && (
-            <div className="p-2 sm:p-3 bg-red-50 border border-red-200 text-red-700 rounded flex items-center gap-2 text-xs sm:text-sm">
+            <div className="p-2 sm:p-3 bg-red-900/30 border border-red-500/30 text-red-300 rounded flex items-center gap-2 text-xs sm:text-sm">
               <AlertCircle className="w-4 h-4 flex-shrink-0" /><span className="truncate">{error}</span>
             </div>
           )}
           {success && (
-            <div className="p-2 sm:p-3 bg-green-50 border border-green-200 text-green-700 rounded flex items-center gap-2 text-xs sm:text-sm">
+            <div className="p-2 sm:p-3 bg-green-900/30 border border-green-500/30 text-green-300 rounded flex items-center gap-2 text-xs sm:text-sm">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />{success}
             </div>
           )}
 
           {/* Schedule Conflict Warning */}
           {conflicts.length > 0 && (
-            <div className="p-2 sm:p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded text-xs sm:text-sm">
+            <div className="p-2 sm:p-3 bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 rounded text-xs sm:text-sm">
               <div className="flex items-center gap-2 font-medium mb-1">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 Cảnh báo xung đột lịch học!
               </div>
-              <ul className="list-disc list-inside space-y-1 text-yellow-700">
+              <ul className="list-disc list-inside space-y-1 text-yellow-300">
                 {conflicts.map((conflict, idx) => (
                   <li key={idx}>{formatConflictMessage(conflict)}</li>
                 ))}
@@ -208,12 +208,12 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
             <>
               {/* Mode Selection */}
               <div className="space-y-2">
-                <label className="text-xs sm:text-sm font-medium text-gray-700">Chế độ đăng ký</label>
+                <label className="text-xs sm:text-sm font-medium text-gray-300">Chế độ đăng ký</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setRegistrationMode('immediate')}
                     className={`flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
-                      registrationMode === 'immediate' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'
+                      registrationMode === 'immediate' ? 'border-green-500 bg-green-900/30 text-green-300' : 'border-gray-600 hover:border-gray-500 text-gray-400'
                     }`}
                   >
                     <img src="touch.png" width={25} alt="" />
@@ -227,8 +227,8 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                     }}
                     disabled={!isPro}
                     className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
-                      registrationMode === 'schedule' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300'
-                    } ${!isPro ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      registrationMode === 'schedule' ? 'border-blue-500 bg-blue-900/30 text-blue-300' : 'border-gray-600 hover:border-gray-500 text-gray-400'
+                    } opacity-50 cursor-not-allowed`}
                   >
                     {!isPro && (
                       <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">
@@ -246,8 +246,8 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                     }}
                     disabled={!isPro}
                     className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
-                      registrationMode === 'waitlist' ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-gray-200 hover:border-gray-300'
-                    } ${!isPro ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      registrationMode === 'waitlist' ? 'border-orange-500 bg-orange-900/30 text-orange-300' : 'border-gray-600 hover:border-gray-500 text-gray-400'
+                    } opacity-50 cursor-not-allowed`}
                   >
                     {!isPro && (
                       <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">
@@ -262,7 +262,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
               {/* Schedule Time */}
               {registrationMode === 'schedule' && (
                 <div className="space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-1">
                     <Clock className="w-4 h-4" /> Thời gian
                   </label>
                   <input
@@ -270,14 +270,14 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                     value={scheduleTime}
                     onChange={(e) => setScheduleTime(e.target.value)}
                     min={getMinDateTime()}
-                    className="w-full px-2 sm:px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                    className="w-full px-2 sm:px-3 py-2 border border-slate-600 bg-slate-700 text-gray-100 placeholder-gray-500 rounded focus:outline-none focus:ring-2 focus:ring-yellow-400/30 focus:border-yellow-400/50 text-sm"
                   />
                 </div>
               )}
 
               {/* Waitlist Info */}
               {registrationMode === 'waitlist' && (
-                <div className="p-3 bg-red-100 border-2 border-orange-300 rounded text-xs sm:text-sm text-orange-800">
+                <div className="p-3 bg-orange-900/30 border-2 border-orange-700/50 rounded text-xs sm:text-sm text-orange-300">
                   <p className="font-medium mb-1 flex items-center gap-2">
                     <img src="loading.png" width={20} className="animate-spin [animation-duration:2s]" alt="" />
                     Chế độ Waitlist</p>
@@ -287,14 +287,14 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
 
               {/* Class List */}
               {isLoading ? (
-                <div className="flex items-center justify-center py-6 sm:py-8 text-gray-500 text-sm">
+                <div className="flex items-center justify-center py-6 sm:py-8 text-gray-400 text-sm">
                   <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin mr-2" />Đang tải...
                 </div>
               ) : classes.length === 0 ? (
-                <div className="text-center py-6 sm:py-8 text-gray-500 text-sm">Không có lớp học phần</div>
+                <div className="text-center py-6 sm:py-8 text-gray-400 text-sm">Không có lớp học phần</div>
               ) : (
                 <div className="space-y-2">
-                  <label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                  <label className="text-xs sm:text-sm font-medium text-gray-300 flex items-center gap-1">
                     <Users className="w-4 h-4" /> Chọn lớp ({classes.length})
                   </label>
                   <div className="space-y-1.5 sm:space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
@@ -308,27 +308,27 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                           key={c.id}
                           onClick={() => clickable && setSelectedClass(c)}
                           className={`p-2 sm:p-3 border rounded flex items-center justify-between transition ${
-                            !clickable ? 'opacity-50 cursor-not-allowed bg-gray-50' :
-                            selected ? 'border-blue-500 bg-blue-50 cursor-pointer' :
-                            'border-gray-200 hover:border-blue-300 cursor-pointer'
+                            !clickable ? 'opacity-50 cursor-not-allowed bg-slate-800/50' :
+                            selected ? 'border-blue-500 bg-blue-900/30 cursor-pointer' :
+                            'border-gray-600 hover:border-blue-400/50 cursor-pointer'
                           }`}
                         >
                           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                             <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                              selected ? 'border-blue-500 bg-blue-500' : 'border-gray-300'
+                              selected ? 'border-blue-500 bg-blue-500' : 'border-gray-500'
                             }`}>
                               {selected && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />}
                             </div>
                             <div className="min-w-0">
-                              <p className="font-medium text-gray-900 text-xs sm:text-sm truncate">{c.maLopHocPhan}</p>
-                              <p className="text-[10px] sm:text-xs text-gray-500">{c.phanTramDangKy}% ĐK</p>
+                              <p className="font-medium text-gray-100 text-xs sm:text-sm truncate">{c.maLopHocPhan}</p>
+                              <p className="text-[10px] sm:text-xs text-gray-400">{c.phanTramDangKy}% ĐK</p>
                             </div>
                           </div>
                           <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${canReg ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${canReg ? 'bg-green-900/50 text-green-300' : 'bg-red-900/50 text-red-300'}`}>
                               {canReg ? 'Còn' : 'Hết'}
                             </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs bg-gray-100 text-gray-600 rounded hidden sm:inline">{c.tenTrangThai}</span>
+                            <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs bg-slate-700 text-gray-300 rounded hidden sm:inline">{c.tenTrangThai}</span>
                           </div>
                         </div>
                       );
@@ -345,13 +345,13 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
               )}
 
               {/* Buttons */}
-              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4 border-t">
-                <Button onClick={onClose} variant="outline" className="flex-1 text-xs sm:text-sm py-2">Hủy</Button>
+              <div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-700">
+                <Button onClick={onClose} variant="outline" className="flex-1 text-xs sm:text-sm py-2 border-gray-600 text-gray-300 hover:bg-slate-700 hover:border-gray-500">Hủy</Button>
                 {registrationMode === 'immediate' ? (
                   <Button
                     onClick={handleRegister}
                     disabled={!selectedClass || isRegistering || Boolean(recaptchaSiteKey && !recaptchaToken) || !!isClassFull}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm py-2"
+                    className="flex-1 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-700 hover:to-emerald-600 text-white text-xs sm:text-sm py-2 shadow-lg shadow-green-500/30"
                   >
                     {isRegistering ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang ĐK...</> : <><CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Đăng ký</>}
                   </Button>
@@ -359,7 +359,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                   <Button
                     onClick={handleSchedule}
                     disabled={!selectedClass || !scheduleTime || isScheduling}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm py-2"
+                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white text-xs sm:text-sm py-2 shadow-lg shadow-blue-500/30"
                   >
                     {isScheduling ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang lịch...</> : <><Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Lên lịch</>}
                   </Button>
@@ -367,7 +367,7 @@ export function ClassModal({ course, classes, registeredCourses = [], isLoading,
                   <Button
                     onClick={handleAddWaitlist}
                     disabled={!selectedClass || isAddingWaitlist}
-                    className="flex-1 bg-orange-600 hover:bg-orange-700 text-white text-xs sm:text-sm py-2"
+                    className="flex-1 bg-gradient-to-r from-orange-600 to-amber-500 hover:from-orange-700 hover:to-amber-600 text-white text-xs sm:text-sm py-2 shadow-lg shadow-orange-500/30"
                   >
                     {isAddingWaitlist ? <><Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin mr-1" />Đang thêm...</> : <><ListPlus className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />Thêm waitlist</>}
                   </Button>
