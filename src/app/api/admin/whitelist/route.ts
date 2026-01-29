@@ -76,7 +76,8 @@ export async function GET(request: NextRequest) {
       SELECT 
         COUNT(*) as total,
         SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) as active_count,
-        SUM(CASE WHEN is_active = false THEN 1 ELSE 0 END) as inactive_count
+        SUM(CASE WHEN is_active = false THEN 1 ELSE 0 END) as inactive_count,
+        SUM(CASE WHEN is_pro = true THEN 1 ELSE 0 END) as pro_count
       FROM allowed_users
     `;
 
@@ -172,7 +173,7 @@ export async function PATCH(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { id, studentName, note, isActive } = body;
+    const { id, studentName, note, isActive, isPro } = body;
 
     if (!id) {
       return NextResponse.json(
@@ -187,6 +188,7 @@ export async function PATCH(request: NextRequest) {
         student_name = COALESCE(${studentName}, student_name),
         note = COALESCE(${note}, note),
         is_active = COALESCE(${isActive}, is_active),
+        is_pro = COALESCE(${isPro}, is_pro),
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ${id}
     `;

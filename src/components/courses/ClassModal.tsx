@@ -13,10 +13,9 @@ interface ClassModalProps {
   isLoading: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  onOpenDonate?: () => void;
 }
 
-export function ClassModal({ course, classes, isLoading, onClose, onSuccess, onOpenDonate }: ClassModalProps) {
+export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: ClassModalProps) {
   const { isPro } = useProStatus();
   const [selectedClass, setSelectedClass] = useState<LopHocPhan | null>(null);
   const [recaptchaToken, setRecaptchaToken] = useState('');
@@ -170,11 +169,11 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess, onO
                   <button
                     onClick={() => {
                       if (!isPro) {
-                        onOpenDonate?.();
                         return;
                       }
                       setRegistrationMode('schedule');
                     }}
+                    disabled={!isPro}
                     className={`relative flex items-center justify-center gap-1 flex-1 p-2 sm:p-3 rounded border-2 text-xs sm:text-sm font-medium transition ${
                       registrationMode === 'schedule' 
                         ? isPro 
@@ -183,7 +182,7 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess, onO
                         : isPro 
                           ? 'border-gray-600 hover:border-gray-500 text-gray-400' 
                           : 'border-gray-200 hover:border-gray-300'
-                    } ${!isPro ? 'opacity-80' : ''}`}
+                    } ${!isPro ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {!isPro && (
                       <span className="absolute -top-2 -right-2 flex items-center gap-0.5 text-[8px] bg-gradient-to-r from-yellow-500 to-amber-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-sm">

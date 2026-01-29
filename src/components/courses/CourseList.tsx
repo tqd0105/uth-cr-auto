@@ -25,10 +25,9 @@ interface CourseListProps {
   bulkMode: boolean;
   selectedCourses?: Set<number>;
   setSelectedCourses?: (courses: Set<number>) => void;
-  onOpenDonate?: () => void;
 }
 
-export function CourseList({ courses, registeredCourses = [], onRefresh, bulkMode, selectedCourses = new Set(), setSelectedCourses, onOpenDonate }: CourseListProps) {
+export function CourseList({ courses, registeredCourses = [], onRefresh, bulkMode, selectedCourses = new Set(), setSelectedCourses }: CourseListProps) {
   const [selectedCourse, setSelectedCourse] = useState<HocPhan | null>(null);
   const [classSections, setClassSections] = useState<LopHocPhan[]>([]);
   const [isLoadingClasses, setIsLoadingClasses] = useState(false);
@@ -187,7 +186,6 @@ export function CourseList({ courses, registeredCourses = [], onRefresh, bulkMod
             handleCloseModal();
             onRefresh();
           }}
-          onOpenDonate={onOpenDonate}
         />
       )}
     </>

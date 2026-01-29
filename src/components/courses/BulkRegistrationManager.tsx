@@ -11,7 +11,6 @@ interface BulkRegistrationManagerProps {
   onClose: () => void;
   selectedCourses: HocPhan[];
   defaultMode?: 'immediate' | 'schedule';
-  onOpenDonate?: () => void;
 }
 
 interface CourseWithClasses {
@@ -22,7 +21,7 @@ interface CourseWithClasses {
   error?: string;
 }
 
-export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode = 'immediate', onOpenDonate }: BulkRegistrationManagerProps) {
+export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode = 'immediate' }: BulkRegistrationManagerProps) {
   const { isPro, loading: proLoading } = useProStatus();
   const [coursesData, setCoursesData] = useState<CourseWithClasses[]>([]);
   const [scheduleTime, setScheduleTime] = useState('');
@@ -38,10 +37,6 @@ export function BulkRegistrationManager({ onClose, selectedCourses, defaultMode 
       <ProLockedScreen
         feature="Đăng ký nhiều lớp cùng lúc"
         description="Chọn và đăng ký nhiều lớp học phần cùng một lúc, tiết kiệm thời gian khi đăng ký!"
-        onUpgrade={() => {
-          onClose();
-          onOpenDonate?.();
-        }}
         onClose={onClose}
       />
     );

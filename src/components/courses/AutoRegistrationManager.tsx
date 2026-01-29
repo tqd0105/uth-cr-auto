@@ -75,10 +75,9 @@ function Countdown({ targetTime, isPro }: { targetTime: string; isPro?: boolean 
 
 interface AutoRegistrationManagerProps {
   onClose: () => void;
-  onOpenDonate?: () => void;
 }
 
-export function AutoRegistrationManager({ onClose, onOpenDonate }: AutoRegistrationManagerProps) {
+export function AutoRegistrationManager({ onClose }: AutoRegistrationManagerProps) {
   const { isPro, loading: proLoading } = useProStatus();
   const [schedules, setSchedules] = useState<RegistrationSchedule[]>([]);
   const [logs, setLogs] = useState<RegistrationLog[]>([]);
@@ -137,10 +136,6 @@ export function AutoRegistrationManager({ onClose, onOpenDonate }: AutoRegistrat
       <ProLockedScreen
         feature="Hẹn lịch đăng ký tự động"
         description="Tự động đăng ký học phần đúng thời gian bạn đặt. Không cần canh giờ, hệ thống sẽ đăng ký thay bạn!"
-        onUpgrade={() => {
-          onClose();
-          onOpenDonate?.();
-        }}
         onClose={onClose}
       />
     );

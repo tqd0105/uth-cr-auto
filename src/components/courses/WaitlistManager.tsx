@@ -30,10 +30,9 @@ interface WaitlistEntry {
 
 interface WaitlistManagerProps {
   onRefresh?: () => void;
-  onOpenDonate?: () => void;
 }
 
-export function WaitlistManager({ onRefresh, onOpenDonate }: WaitlistManagerProps) {
+export function WaitlistManager({ onRefresh }: WaitlistManagerProps) {
   const { isPro, loading: proLoading } = useProStatus();
   const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -151,7 +150,6 @@ export function WaitlistManager({ onRefresh, onOpenDonate }: WaitlistManagerProp
       <ProFeature 
         feature="Chờ slot" 
         description="Tự động đăng ký khi lớp học phần có slot trống. Không bỏ lỡ cơ hội!"
-        onUpgrade={onOpenDonate}
       >
         <div className="">
           {/* Mock waitlist UI */}
@@ -159,14 +157,15 @@ export function WaitlistManager({ onRefresh, onOpenDonate }: WaitlistManagerProp
             <h3 className="text-lg font-semibold text-gray-900">
               Danh sách chờ (0)
             </h3>
-            <Button disabled size="sm" className="bg-orange-600">
+            <Button disabled size="sm" className="bg-orange-600 mb-2">
               <RefreshCw className="w-4 h-4 mr-1" />Kiểm tra ngay
             </Button>
           </div>
           <Card>
             <CardContent className="p-8 text-center">
-              <Clock className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-gray-500">Chức năng chờ slot</p>
+              <Clock className="w-12 h-12 mx-auto text-gray-300 mb-1" />
+              <p className="text-blue-600 font-bold">Chức năng chờ slot</p>
+              <p className="text-gray-500 text-xs" >Liên hệ admin để được cấp quyền PRO</p>
             </CardContent>
           </Card>
         </div>

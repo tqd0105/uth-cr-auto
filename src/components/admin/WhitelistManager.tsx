@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, RefreshCw, ChevronLeft, ChevronRight, Plus, Edit2, Trash2, X, Check, AlertTriangle } from 'lucide-react';
+import { Search, RefreshCw, ChevronLeft, ChevronRight, Plus, Edit2, Trash2, X, Check, AlertTriangle, Crown } from 'lucide-react';
 
 interface AllowedUser {
   id: number;
@@ -9,6 +9,7 @@ interface AllowedUser {
   student_name: string | null;
   note: string | null;
   is_active: boolean;
+  is_pro: boolean;
   added_by: string;
   created_at: string;
   updated_at: string;
@@ -18,6 +19,7 @@ interface Stats {
   total: number;
   active_count: number;
   inactive_count: number;
+  pro_count: number;
 }
 
 interface Pagination {
@@ -161,6 +163,25 @@ export function WhitelistManager() {
     }
   };
 
+  const handleTogglePro = async (user: AllowedUser) => {
+    try {
+      const res = await fetch('/api/admin/whitelist', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: user.id,
+          isPro: !user.is_pro
+        })
+      });
+
+      if (res.ok) {
+        fetchUsers(pagination.page, search, showInactive);
+      }
+    } catch (error) {
+      console.error('Failed to toggle pro:', error);
+    }
+  };
+
   const handleDelete = async (id: number, permanent = false) => {
     const message = permanent 
       ? 'Bạn có chắc muốn XÓA VĨNH VIỄN người dùng này khỏi whitelist?' 
@@ -223,6 +244,10 @@ export function WhitelistManager() {
           </span>
           <span className="text-gray-400">
             Vô hiệu: <span className="text-gray-500 font-medium">{stats?.inactive_count || 0}</span>
+          </span>
+          <span className="text-gray-400 flex items-center gap-1">
+            <Crown className="w-4 h-4 text-yellow-500" />
+            Pro: <span className="text-yellow-400 font-medium">{stats?.pro_count || 0}</span>
           </span>
         </div>
         <button
@@ -287,6 +312,7 @@ export function WhitelistManager() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">MSSV</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Tên</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase hidden md:table-cell">Ghi chú</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Pro</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Trạng thái</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase">Thao tác</th>
               </tr>
@@ -294,7 +320,7 @@ export function WhitelistManager() {
             <tbody className="divide-y divide-gray-700">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-gray-600 border-t-blue-500 rounded-full animate-spin"></div>
                       Đang tải...
@@ -303,7 +329,7 @@ export function WhitelistManager() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                     {search ? 'Không tìm thấy kết quả' : 'Whitelist trống'}
                   </td>
                 </tr>
@@ -318,6 +344,19 @@ export function WhitelistManager() {
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-sm text-gray-400 truncate max-w-xs block">{user.note || '-'}</span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => handleTogglePro(user)}
+                        className={`p-1.5 rounded transition-colors ${
+                          user.is_pro 
+                            ? 'bg-yellow-900/50 text-yellow-400 hover:bg-yellow-800/50' 
+                            : 'bg-gray-700 text-gray-500 hover:bg-gray-600'
+                        }`}
+                        title={user.is_pro ? 'Tắt Pro' : 'Bật Pro'}
+                      >
+                        <Crown className="w-4 h-4" />
+                      </button>
                     </td>
                     <td className="px-4 py-3">
                       <button

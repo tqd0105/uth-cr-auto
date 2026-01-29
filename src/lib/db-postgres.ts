@@ -167,6 +167,7 @@ export async function initDatabase() {
         student_name TEXT,
         note TEXT,
         is_active BOOLEAN DEFAULT true,
+        is_pro BOOLEAN DEFAULT false,
         added_by TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -174,6 +175,7 @@ export async function initDatabase() {
     `;
     await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_student ON allowed_users(student_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_active ON allowed_users(is_active)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_pro ON allowed_users(is_pro)`;
 
     // Admin sessions table - Lưu session admin
     await sql`
