@@ -1,5 +1,5 @@
 import { sql } from '@vercel/postgres';
-import { RegistrationSchedule, RegistrationLog, UserConfig, RegistrationStatus } from './types/uth';
+import { RegistrationSchedule, RegistrationLog, UserConfig, RegistrationStatus, Donation, DonationStatus } from './types/uth';
 
 // Waitlist status enum
 export enum WaitlistStatus {
@@ -208,6 +208,27 @@ export async function initDatabase() {
     `;
     await sql`CREATE INDEX IF NOT EXISTS idx_access_requests_student ON access_requests(student_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_access_requests_status ON access_requests(status)`;
+
+    // Donations table
+    await sql`
+      CREATE TABLE IF NOT EXISTS donations (
+        id SERIAL PRIMARY KEY,
+        user_session TEXT NOT NULL,
+        email TEXT NOT NULL,
+        student_id TEXT,
+        amount INTEGER NOT NULL,
+        transfer_content TEXT NOT NULL,
+        registration_period_id INTEGER NOT NULL,
+        status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+        approved_by TEXT,
+        approved_at TIMESTAMP,
+        note TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    await sql`CREATE INDEX IF NOT EXISTS idx_donations_user_session ON donations(user_session)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_donations_email ON donations(email)`;
 
     console.log('Database initialized successfully');
   } catch (error) {
@@ -475,6 +496,161 @@ export const waitlistDb = {
   deleteByUserSession: async (userSession: string) => {
     const result = await sql`
       DELETE FROM waitlist WHERE user_session = ${userSession}
+    `;
+    return { changes: result.rowCount };
+  }
+};
+
+// Donation operations
+export const donationDb = {
+  insert: async (donation: Omit<Donation, 'id' | 'created_at' | 'status' | 'approved_by' | 'approved_at'>) => {
+    const result = await sql`
+      INSERT INTO donations 
+      (user_session, email, student_id, amount, transfer_content, registration_period_id, note)
+      VALUES (
+        ${donation.user_session},
+        ${donation.email},
+        ${donation.student_id || null},
+        ${donation.amount},
+        ${donation.transfer_content},
+        ${donation.registration_period_id},
+        ${donation.note || null}
+      )
+      RETURNING id
+    `;
+    return { changes: result.rowCount, lastInsertRowid: result.rows[0]?.id };
+  },
+
+  findBySession: async (userSession: string): Promise<Donation[]> => {
+    const result = await sql`
+      SELECT * FROM donations 
+      WHERE user_session = ${userSession} 
+      ORDER BY created_at DESC
+    `;
+    return result.rows as Donation[];
+  },
+
+  findByEmail: async (email: string): Promise<Donation[]> => {
+    const result = await sql`
+      SELECT * FROM donations 
+      WHERE email = ${email} 
+      ORDER BY created_at DESC
+    `;
+    return result.rows as Donation[];
+  },
+
+  getAll: async (status?: DonationStatus | null, page: number = 1, limit: number = 50): Promise<Donation[]> => {
+    const offset = (page - 1) * limit;
+    if (status) {
+      const result = await sql`
+        SELECT * FROM donations 
+        WHERE status = ${status}
+        ORDER BY created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `;
+      return result.rows as Donation[];
+    }
+    const result = await sql`
+      SELECT * FROM donations 
+      ORDER BY created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `;
+    return result.rows as Donation[];
+  },
+
+  findAll: async (status?: DonationStatus): Promise<Donation[]> => {
+    if (status) {
+      const result = await sql`
+        SELECT * FROM donations 
+        WHERE status = ${status}
+        ORDER BY created_at DESC
+      `;
+      return result.rows as Donation[];
+    }
+    const result = await sql`
+      SELECT * FROM donations 
+      ORDER BY created_at DESC
+    `;
+    return result.rows as Donation[];
+  },
+
+  findById: async (id: number): Promise<Donation | undefined> => {
+    const result = await sql`
+      SELECT * FROM donations WHERE id = ${id}
+    `;
+    return result.rows[0] as Donation | undefined;
+  },
+
+  hasActivePro: async (userSession: string, registrationPeriodId: number): Promise<boolean> => {
+    const result = await sql`
+      SELECT COUNT(*) as count FROM donations 
+      WHERE user_session = ${userSession} 
+      AND registration_period_id = ${registrationPeriodId}
+      AND status = 'approved'
+      AND amount >= 12000
+    `;
+    return Number(result.rows[0]?.count || 0) > 0;
+  },
+
+  getTotalDonated: async (userSession: string): Promise<number> => {
+    const result = await sql`
+      SELECT COALESCE(SUM(amount), 0) as total FROM donations 
+      WHERE user_session = ${userSession} AND status = 'approved'
+    `;
+    return Number(result.rows[0]?.total || 0);
+  },
+
+  getTopDonors: async (limit: number = 10): Promise<{ email: string; total: number; count: number }[]> => {
+    const result = await sql`
+      SELECT 
+        email,
+        SUM(amount) as total,
+        COUNT(*) as count
+      FROM donations 
+      WHERE status = 'approved'
+      GROUP BY email
+      ORDER BY total DESC
+      LIMIT ${limit}
+    `;
+    return result.rows as { email: string; total: number; count: number }[];
+  },
+
+  getStats: async (): Promise<{ total_amount: number; total_donors: number; total_donations: number }> => {
+    const result = await sql`
+      SELECT 
+        COALESCE(SUM(amount), 0) as total_amount,
+        COUNT(DISTINCT email) as total_donors,
+        COUNT(*) as total_donations
+      FROM donations 
+      WHERE status = 'approved'
+    `;
+    return {
+      total_amount: Number(result.rows[0]?.total_amount || 0),
+      total_donors: Number(result.rows[0]?.total_donors || 0),
+      total_donations: Number(result.rows[0]?.total_donations || 0)
+    };
+  },
+
+  updateStatus: async (id: number, status: DonationStatus, approvedBy?: string, note?: string) => {
+    if (status === 'approved' && approvedBy) {
+      const result = await sql`
+        UPDATE donations 
+        SET status = ${status}, approved_by = ${approvedBy}, approved_at = CURRENT_TIMESTAMP, note = COALESCE(${note || null}, note)
+        WHERE id = ${id}
+      `;
+      return { changes: result.rowCount };
+    }
+    const result = await sql`
+      UPDATE donations 
+      SET status = ${status}, note = COALESCE(${note || null}, note)
+      WHERE id = ${id}
+    `;
+    return { changes: result.rowCount };
+  },
+
+  delete: async (id: number) => {
+    const result = await sql`
+      DELETE FROM donations WHERE id = ${id}
     `;
     return { changes: result.rowCount };
   }

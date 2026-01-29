@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { donationDb } from '@/lib/db';
 import type { DonationStatus } from '@/lib/types/uth';
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getDb = async () => {
+  if (isProduction) {
+    return await import('@/lib/db-postgres');
+  }
+  return await import('@/lib/db');
+};
 
 // GET - Get all donations for admin
 export async function GET(request: NextRequest) {
@@ -10,8 +18,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
 
-    const donations = donationDb.getAll(status, page, limit);
-    const stats = donationDb.getStats();
+    const { donationDb } = await getDb();
+    const donations = await donationDb.getAll(status, page, limit);
+    const stats = await donationDb.getStats();
 
     return NextResponse.json({
       success: true,
@@ -52,7 +61,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const updated = donationDb.updateStatus(id, status, approved_by, note);
+    const { donationDb } = await getDb();
+    const updated = await donationDb.updateStatus(id, status, approved_by, note);
 
     if (!updated) {
       return NextResponse.json(

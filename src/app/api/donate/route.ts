@@ -1,5 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { donationDb, userConfigDb } from '@/lib/db';
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+// Dynamic import based on environment
+const getDb = async () => {
+  if (isProduction) {
+    return await import('@/lib/db-postgres');
+  }
+  return await import('@/lib/db');
+};
 
 const MIN_DONATION = 12000; // 12k VND
 const CURRENT_PERIOD_ID = 75; // Đợt ĐKHP hiện tại - có thể đưa vào env hoặc database
@@ -24,14 +33,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const { donationDb } = await getDb();
+
     // Get user's donations
-    const donations = donationDb.findBySession(userSession);
+    const donations = await donationDb.findBySession(userSession);
     
     // Check if user has active pro for current period
-    const isPro = donationDb.hasActivePro(userSession, CURRENT_PERIOD_ID);
+    const isPro = await donationDb.hasActivePro(userSession, CURRENT_PERIOD_ID);
     
     // Get total donated
-    const totalDonated = donationDb.getTotalDonated(userSession);
+    const totalDonated = await donationDb.getTotalDonated(userSession);
 
     // Get pending donation if any
     const pendingDonation = donations.find(d => d.status === 'pending');
@@ -76,7 +87,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const userConfig = userConfigDb.findBySession(userSession);
+    const { donationDb, userConfigDb } = await getDb();
+
+    const userConfig = await userConfigDb.findBySession(userSession);
     if (!userConfig) {
       return NextResponse.json(
         { success: false, message: 'Không tìm thấy thông tin người dùng' },
@@ -103,7 +116,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if already has pending donation
-    const existingDonations = donationDb.findBySession(userSession);
+    const existingDonations = await donationDb.findBySession(userSession);
     const hasPending = existingDonations.some(d => d.status === 'pending');
     if (hasPending) {
       return NextResponse.json(
@@ -118,7 +131,7 @@ export async function POST(request: NextRequest) {
     const transferContent = `UTH ${email}`;
 
     // Create donation record
-    const result = donationDb.insert({
+    const result = await donationDb.insert({
       user_session: userSession,
       email,
       student_id,
@@ -147,8 +160,8 @@ export async function POST(request: NextRequest) {
         },
         is_pro: false,
         current_period_id: CURRENT_PERIOD_ID,
-        total_donated: donationDb.getTotalDonated(userSession),
-        donations: donationDb.findBySession(userSession),
+        total_donated: await donationDb.getTotalDonated(userSession),
+        donations: await donationDb.findBySession(userSession),
         pending_donation: {
           amount,
           transfer_content: transferContent,
@@ -178,8 +191,10 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    const { donationDb } = await getDb();
+
     // Find pending donation for this user
-    const donations = donationDb.findBySession(userSession);
+    const donations = await donationDb.findBySession(userSession);
     const pendingDonation = donations.find(d => d.status === 'pending');
 
     if (!pendingDonation) {
@@ -189,7 +204,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    donationDb.delete(pendingDonation.id!);
+    await donationDb.delete(pendingDonation.id!);
 
     return NextResponse.json({
       success: true,

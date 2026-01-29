@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { donationDb } from '@/lib/db';
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const getDb = async () => {
+  if (isProduction) {
+    return await import('@/lib/db-postgres');
+  }
+  return await import('@/lib/db');
+};
 
 // GET - Get top donors and stats (public)
 export async function GET() {
   try {
-    const topDonors = donationDb.getTopDonors(20);
-    const stats = donationDb.getStats();
+    const { donationDb } = await getDb();
+    const topDonors = await donationDb.getTopDonors(20);
+    const stats = await donationDb.getStats();
 
     // Mask emails for privacy (show only first 3 chars + domain)
     const maskedDonors = topDonors.map(d => ({
