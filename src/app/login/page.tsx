@@ -6,7 +6,6 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { TermsModal } from '@/components/auth/TermsModal';
 
 const TERMS_ACCEPTED_KEY = 'uth-auto-terms-accepted';
-const SESSION_KEY = 'uth-auto-session';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,22 +15,31 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Kiểm tra xem người dùng đã đăng nhập chưa
-    const session = localStorage.getItem(SESSION_KEY);
-    if (session) {
-      // Đã đăng nhập, redirect về dashboard
-      router.replace('/dashboard');
-      return;
-    }
+    // Kiểm tra xem người dùng đã đăng nhập chưa (qua API vì session lưu bằng httpOnly cookie)
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/auth/check');
+        const data = await res.json();
+        if (data.authenticated) {
+          // Đã đăng nhập, redirect về dashboard
+          router.replace('/dashboard');
+          return;
+        }
+      } catch (err) {
+        // Lỗi thì cho phép đăng nhập
+      }
 
-    // Kiểm tra xem người dùng đã chấp nhận điều khoản chưa
-    const accepted = localStorage.getItem(TERMS_ACCEPTED_KEY);
-    if (accepted === 'true') {
-      setTermsAccepted(true);
-    } else {
-      setShowTerms(true);
-    }
-    setIsLoading(false);
+      // Kiểm tra xem người dùng đã chấp nhận điều khoản chưa
+      const accepted = localStorage.getItem(TERMS_ACCEPTED_KEY);
+      if (accepted === 'true') {
+        setTermsAccepted(true);
+      } else {
+        setShowTerms(true);
+      }
+      setIsLoading(false);
+    };
+    
+    checkSession();
   }, [router]);
 
   const handleAccept = () => {
