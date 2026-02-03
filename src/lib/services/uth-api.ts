@@ -4,6 +4,7 @@ import type {
   LoginResponse,
   HocPhan,
   LopHocPhan,
+  LopHocPhanDetail,
   DangKyHocPhan,
   StudentInfo,
   ApiResponse,
@@ -278,6 +279,24 @@ export class UTHApiService {
     }
 
     return data;
+  }
+
+  /**
+   * Get class schedule detail (chi tiết lịch học của lớp học phần)
+   */
+  async getClassScheduleDetail(idLopHocPhan: number): Promise<LopHocPhanDetail[]> {
+    try {
+      const response = await this.authenticatedRequest<LopHocPhanDetail[]>(
+        `${this.baseUrl}/dkhp/getLopHocPhanDetail?idLopHocPhan=${idLopHocPhan}`
+      );
+      return response.body || [];
+    } catch (error) {
+      console.error('Get class schedule detail error:', error);
+      if (error instanceof UTHApiError) {
+        throw error;
+      }
+      throw new UTHApiError('Lấy chi tiết lịch học thất bại', 500);
+    }
   }
 
   /**

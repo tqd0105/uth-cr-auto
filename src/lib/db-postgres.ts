@@ -175,6 +175,16 @@ export async function initDatabase() {
     `;
     await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_student ON allowed_users(student_id)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_active ON allowed_users(is_active)`;
+    
+    // Migration: Add is_pro column if not exists
+    await sql`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='allowed_users' AND column_name='is_pro') THEN
+          ALTER TABLE allowed_users ADD COLUMN is_pro BOOLEAN DEFAULT false;
+        END IF;
+      END $$;
+    `;
     await sql`CREATE INDEX IF NOT EXISTS idx_allowed_users_pro ON allowed_users(is_pro)`;
 
     // Admin sessions table - Lưu session admin

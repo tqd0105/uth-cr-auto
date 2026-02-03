@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ReCaptcha } from '@/components/auth/ReCaptcha';
-import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, Crown } from 'lucide-react';
+import { X, Loader2, Users, CheckCircle, AlertCircle, Clock, Calendar, Crown, MapPin, BookOpen } from 'lucide-react';
 import { useProStatus } from '@/hooks/useProStatus';
-import type { HocPhan, LopHocPhan } from '@/lib/types/uth';
+import type { HocPhan, LopHocPhan, LopHocPhanDetail } from '@/lib/types/uth';
 
 interface ClassModalProps {
   course: HocPhan;
@@ -14,6 +14,21 @@ interface ClassModalProps {
   onClose: () => void;
   onSuccess: () => void;
 }
+
+// Helper function để convert số thứ thành tên
+const getThuName = (thu: number): string => {
+  const thuMap: Record<number, string> = {
+    2: 'Thứ 2', 3: 'Thứ 3', 4: 'Thứ 4', 5: 'Thứ 5',
+    6: 'Thứ 6', 7: 'Thứ 7', 8: 'CN'
+  };
+  return thuMap[thu] || `Thứ ${thu}`;
+};
+
+// Helper function để format ngày
+const formatDate = (dateStr: string): string => {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+};
 
 export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: ClassModalProps) {
   const { isPro } = useProStatus();
@@ -25,6 +40,41 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [scheduleTime, setScheduleTime] = useState('');
+  
+  // State for class schedule details
+  const [scheduleDetails, setScheduleDetails] = useState<Record<number, LopHocPhanDetail[]>>({});
+  const [loadingSchedule, setLoadingSchedule] = useState<number | null>(null);
+  const [expandedClass, setExpandedClass] = useState<number | null>(null);
+
+  // Fetch schedule detail for a class
+  const fetchScheduleDetail = useCallback(async (classId: number) => {
+    if (scheduleDetails[classId]) {
+      // Already fetched, just toggle expand
+      setExpandedClass(expandedClass === classId ? null : classId);
+      return;
+    }
+
+    setLoadingSchedule(classId);
+    try {
+      const response = await fetch(`/api/courses/schedule-detail?idLopHocPhan=${classId}`);
+      const data = await response.json();
+      if (data.success) {
+        setScheduleDetails(prev => ({ ...prev, [classId]: data.data }));
+        setExpandedClass(classId);
+      }
+    } catch (err) {
+      console.error('Error fetching schedule detail:', err);
+    } finally {
+      setLoadingSchedule(null);
+    }
+  }, [scheduleDetails, expandedClass]);
+
+  // Auto fetch schedule when selecting a class
+  useEffect(() => {
+    if (selectedClass && !scheduleDetails[selectedClass.id]) {
+      fetchScheduleDetail(selectedClass.id);
+    }
+  }, [selectedClass, scheduleDetails, fetchScheduleDetail]);
 
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
 
@@ -198,38 +248,91 @@ export function ClassModal({ course, classes, isLoading, onClose, onSuccess }: C
                     {classes.map((c) => {
                       const canReg = c.choDangKy !== false;
                       const selected = selectedClass?.id === c.id;
+                      const classSchedule = scheduleDetails[c.id];
+                      const isExpanded = expandedClass === c.id;
+                      const isLoadingThis = loadingSchedule === c.id;
+                      
                       return (
-                        <div
-                          key={c.id}
-                          onClick={() => canReg && setSelectedClass(c)}
-                          className={`p-2 sm:p-3 border rounded flex items-center justify-between transition ${
-                            !canReg 
-                              ? 'opacity-50 cursor-not-allowed bg-slate-800/50' 
-                              : selected 
-                                ? 'border-blue-500 bg-blue-900/30 cursor-pointer' 
-                                : 'border-gray-600 hover:border-blue-400/50 cursor-pointer'
-                          }`}
-                        >
-                          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-                              selected ? 'border-blue-500 bg-blue-500' : 'border-gray-500'
-                            }`}>
-                              {selected && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />}
+                        <div key={c.id} className="space-y-1">
+                          <div
+                            onClick={() => canReg && setSelectedClass(c)}
+                            className={`p-2 sm:p-3 border rounded transition ${
+                              !canReg 
+                                ? 'opacity-50 cursor-not-allowed bg-slate-800/50' 
+                                : selected 
+                                  ? 'border-blue-500 bg-blue-900/30 cursor-pointer' 
+                                  : 'border-gray-600 hover:border-blue-400/50 cursor-pointer'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                                <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                  selected ? 'border-blue-500 bg-blue-500' : 'border-gray-500'
+                                }`}>
+                                  {selected && <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white rounded-full" />}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="font-medium text-xs sm:text-sm truncate text-gray-100">{c.maLopHocPhan}</p>
+                                  <p className="text-[10px] sm:text-xs text-gray-400">{c.phanTramDangKy}% ĐK</p>
+                                </div>
+                              </div>
+                              <div className="flex gap-1 sm:gap-2 flex-shrink-0 items-center">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    fetchScheduleDetail(c.id);
+                                  }}
+                                  className="p-1 rounded hover:bg-slate-700 text-gray-400 hover:text-cyan-400 transition"
+                                  title="Xem lịch học"
+                                >
+                                  {isLoadingThis ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <Calendar className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                                <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${
+                                  canReg 
+                                    ? 'bg-green-900/50 text-green-300' 
+                                    : 'bg-red-900/50 text-red-300'
+                                }`}>
+                                  {canReg ? 'Còn' : 'Hết'}
+                                </span>
+                                <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded hidden sm:inline bg-slate-700 text-gray-300">{c.tenTrangThai}</span>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="font-medium text-xs sm:text-sm truncate text-gray-100">{c.maLopHocPhan}</p>
-                              <p className="text-[10px] sm:text-xs text-gray-400">{c.phanTramDangKy}% ĐK</p>
-                            </div>
-                          </div>
-                          <div className="flex gap-1 sm:gap-2 flex-shrink-0">
-                            <span className={`px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded ${
-                              canReg 
-                                ? 'bg-green-900/50 text-green-300' 
-                                : 'bg-red-900/50 text-red-300'
-                            }`}>
-                              {canReg ? 'Còn' : 'Hết'}
-                            </span>
-                            <span className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs rounded hidden sm:inline bg-slate-700 text-gray-300">{c.tenTrangThai}</span>
+                            
+                            {/* Schedule Detail - Expanded */}
+                            {isExpanded && classSchedule && classSchedule.length > 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-700/50 space-y-1.5">
+                                {classSchedule.map((schedule, idx) => (
+                                  <div key={idx} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] sm:text-xs text-gray-400 bg-slate-800/50 rounded px-2 py-1.5">
+                                    <span className="flex items-center gap-1 text-cyan-400 font-medium">
+                                      <Clock className="w-3 h-3" />
+                                      {getThuName(schedule.thu)} • Tiết {schedule.tietHoc}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <BookOpen className="w-3 h-3" />
+                                      {schedule.loaiLich === 'LT' ? 'Lý thuyết' : schedule.loaiLich === 'TH' ? 'Thực hành' : schedule.loaiLich}
+                                    </span>
+                                    {(schedule.dayNha || schedule.phong) && (
+                                      <span className="flex items-center gap-1">
+                                        <MapPin className="w-3 h-3" />
+                                        {[schedule.dayNha, schedule.phong].filter(Boolean).join(' - ') || 'Chưa có'}
+                                      </span>
+                                    )}
+                                    <span className="text-gray-500">
+                                      {formatDate(schedule.ngayBatDau)} → {formatDate(schedule.ngayKetThuc)}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            {isExpanded && classSchedule && classSchedule.length === 0 && (
+                              <div className="mt-2 pt-2 border-t border-gray-700/50 text-[10px] sm:text-xs text-gray-500 italic">
+                                Chưa có thông tin lịch học
+                              </div>
+                            )}
                           </div>
                         </div>
                       );

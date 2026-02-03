@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Verify session exists in database
-    const userConfig = await userConfigDb.get(userSession);
+    const userConfig = await userConfigDb.findBySession(userSession);
     
     if (!userConfig) {
       return NextResponse.json({ authenticated: false });

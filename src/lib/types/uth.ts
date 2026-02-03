@@ -145,6 +145,18 @@ export interface RegistrationLog {
   created_at: string;
 }
 
+// Chi tiết lịch học của lớp học phần
+export interface LopHocPhanDetail {
+  thu: number; // 2-8 (Thứ 2 - Chủ nhật) hoặc 4 = Thứ 4
+  tietHoc: string; // "4-6"
+  loaiLich: string; // "LT" = Lý thuyết, "TH" = Thực hành
+  dayNha: string | null;
+  phong: string | null;
+  ngayBatDau: string; // "2026-03-04T00:00:00Z"
+  ngayKetThuc: string; // "2026-05-06T00:00:00Z"
+  ghiChu: string;
+}
+
 // Lịch học tuần
 export interface LichHoc {
   id: number;
