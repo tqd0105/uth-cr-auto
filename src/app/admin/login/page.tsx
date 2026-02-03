@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 
@@ -11,6 +11,26 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
+
+  // Kiểm tra xem admin đã đăng nhập chưa
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch('/api/admin/auth');
+        const data = await res.json();
+        if (data.authenticated) {
+          // Đã đăng nhập, redirect về admin dashboard
+          router.replace('/admin');
+          return;
+        }
+      } catch (err) {
+        // Lỗi thì cho phép đăng nhập
+      }
+      setIsCheckingSession(false);
+    };
+    checkSession();
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +57,15 @@ export default function AdminLoginPage() {
       setIsLoading(false);
     }
   };
+
+  // Loading khi đang kiểm tra session
+  if (isCheckingSession) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">

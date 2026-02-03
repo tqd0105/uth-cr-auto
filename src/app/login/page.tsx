@@ -1,18 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { TermsModal } from '@/components/auth/TermsModal';
 
 const TERMS_ACCEPTED_KEY = 'uth-auto-terms-accepted';
+const SESSION_KEY = 'uth-auto-session';
 
 export default function LoginPage() {
+  const router = useRouter();
   const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
   const [showTerms, setShowTerms] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    const session = localStorage.getItem(SESSION_KEY);
+    if (session) {
+      // Đã đăng nhập, redirect về dashboard
+      router.replace('/dashboard');
+      return;
+    }
+
     // Kiểm tra xem người dùng đã chấp nhận điều khoản chưa
     const accepted = localStorage.getItem(TERMS_ACCEPTED_KEY);
     if (accepted === 'true') {
@@ -21,7 +32,7 @@ export default function LoginPage() {
       setShowTerms(true);
     }
     setIsLoading(false);
-  }, []);
+  }, [router]);
 
   const handleAccept = () => {
     localStorage.setItem(TERMS_ACCEPTED_KEY, 'true');
