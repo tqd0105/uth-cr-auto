@@ -15,7 +15,9 @@ import {
   FileWarning,
   Activity,
   XCircle,
-  Heart
+  Heart,
+  Construction,
+  Power
 } from 'lucide-react';
 
 // Import các components quản lý
@@ -53,6 +55,9 @@ export default function AdminDashboardPage() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [stats, setStats] = useState<Stats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('');
+  const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false);
 
   // Check authentication
   useEffect(() => {
@@ -86,11 +91,56 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Fetch maintenance status
+  const fetchMaintenanceStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/maintenance');
+      const data = await res.json();
+      if (data.success) {
+        setMaintenanceMode(data.data.maintenance_mode);
+        setMaintenanceMessage(data.data.maintenance_message);
+      }
+    } catch (error) {
+      console.error('Failed to fetch maintenance status:', error);
+    }
+  };
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchStats();
+      fetchMaintenanceStatus();
     }
   }, [isAuthenticated]);
+
+  const handleToggleMaintenance = async () => {
+    const newState = !maintenanceMode;
+    const message = newState 
+      ? prompt('Nhập thông báo bảo trì:', maintenanceMessage || 'Hệ thống đang bảo trì, vui lòng quay lại sau.')
+      : undefined;
+    
+    if (newState && message === null) return; // User cancelled
+
+    setIsTogglingMaintenance(true);
+    try {
+      const res = await fetch('/api/admin/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: newState, message })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMaintenanceMode(newState);
+        if (message) setMaintenanceMessage(message);
+        alert(newState ? '✅ Đã bật chế độ bảo trì' : '✅ Đã tắt chế độ bảo trì');
+      } else {
+        alert('❌ ' + data.message);
+      }
+    } catch (error) {
+      alert('❌ Lỗi kết nối');
+    } finally {
+      setIsTogglingMaintenance(false);
+    }
+  };
 
   const handleLogout = async () => {
     await fetch('/api/admin/auth', { method: 'DELETE' });
@@ -121,15 +171,50 @@ export default function AdminDashboardPage() {
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-200">Control Panel</h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Đăng xuất</span>
-          </button>
+          <div className="flex items-center gap-3">
+            {/* Maintenance Toggle */}
+            <button
+              onClick={handleToggleMaintenance}
+              disabled={isTogglingMaintenance}
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                maintenanceMode
+                  ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              }`}
+              title={maintenanceMode ? 'Tắt bảo trì' : 'Bật bảo trì'}
+            >
+              {isTogglingMaintenance ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : maintenanceMode ? (
+                <Construction className="w-4 h-4" />
+              ) : (
+                <Power className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {maintenanceMode ? 'Đang bảo trì' : 'Bảo trì'}
+              </span>
+            </button>
+            
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Đăng xuất</span>
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Maintenance Banner */}
+      {maintenanceMode && (
+        <div className="bg-yellow-600/20 border-b border-yellow-600/50 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-yellow-400 text-sm">
+            <Construction className="w-4 h-4" />
+            <span>Chế độ bảo trì đang BẬT - Người dùng sẽ thấy trang bảo trì</span>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Tabs */}

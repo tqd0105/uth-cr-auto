@@ -4,7 +4,7 @@ import { waitlistDb, userConfigDb, registrationLogDb, WaitlistStatus } from '@/l
 import { getUTHApi } from '@/lib/services/uth-api';
 
 // Cron job để tự động kiểm tra và đăng ký waitlist
-// Được gọi bởi Vercel Cron mỗi 5 phút
+// Được gọi bởi cron-job.org mỗi 1 phút
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret (optional security)

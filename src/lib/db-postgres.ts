@@ -242,6 +242,25 @@ export async function initDatabase() {
     await sql`CREATE INDEX IF NOT EXISTS idx_donations_status ON donations(status)`;
     await sql`CREATE INDEX IF NOT EXISTS idx_donations_email ON donations(email)`;
 
+    // Site settings table - Cài đặt trang web
+    await sql`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        id SERIAL PRIMARY KEY,
+        key TEXT UNIQUE NOT NULL,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+    
+    // Initialize default settings
+    await sql`
+      INSERT INTO site_settings (key, value)
+      VALUES 
+        ('maintenance_mode', 'false'),
+        ('maintenance_message', 'Hệ thống đang bảo trì, vui lòng quay lại sau.')
+      ON CONFLICT (key) DO NOTHING
+    `;
+
     console.log('Database initialized successfully');
   } catch (error) {
     console.error('Failed to initialize database:', error);
@@ -665,6 +684,108 @@ export const donationDb = {
       DELETE FROM donations WHERE id = ${id}
     `;
     return { changes: result.rowCount };
+  }
+};
+
+// Site settings operations
+export const siteSettingsDb = {
+  // Ensure table exists
+  ensureTable: async () => {
+    try {
+      await sql`
+        CREATE TABLE IF NOT EXISTS site_settings (
+          key TEXT PRIMARY KEY,
+          value TEXT NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `;
+    } catch (error) {
+      console.error('Error creating site_settings table:', error);
+    }
+  },
+
+  get: async (key: string): Promise<string | null> => {
+    try {
+      await siteSettingsDb.ensureTable();
+      const result = await sql`
+        SELECT value FROM site_settings WHERE key = ${key}
+      `;
+      return result.rows[0]?.value || null;
+    } catch (error) {
+      console.error('Error getting site setting:', error);
+      return null;
+    }
+  },
+
+  set: async (key: string, value: string) => {
+    try {
+      await siteSettingsDb.ensureTable();
+      const result = await sql`
+        INSERT INTO site_settings (key, value, updated_at)
+        VALUES (${key}, ${value}, CURRENT_TIMESTAMP)
+        ON CONFLICT (key) DO UPDATE SET
+          value = ${value},
+          updated_at = CURRENT_TIMESTAMP
+      `;
+      return { changes: result.rowCount };
+    } catch (error) {
+      console.error('Error setting site setting:', error);
+      return { changes: 0 };
+    }
+  },
+
+  isMaintenanceMode: async (): Promise<boolean> => {
+    try {
+      await siteSettingsDb.ensureTable();
+      const result = await sql`
+        SELECT value FROM site_settings WHERE key = 'maintenance_mode'
+      `;
+      return result.rows[0]?.value === 'true';
+    } catch (error) {
+      console.error('Error checking maintenance mode:', error);
+      return false; // Default to not in maintenance mode
+    }
+  },
+
+  getMaintenanceMessage: async (): Promise<string> => {
+    try {
+      await siteSettingsDb.ensureTable();
+      const result = await sql`
+        SELECT value FROM site_settings WHERE key = 'maintenance_message'
+      `;
+      return result.rows[0]?.value || 'Hệ thống đang bảo trì, vui lòng quay lại sau.';
+    } catch (error) {
+      console.error('Error getting maintenance message:', error);
+      return 'Hệ thống đang bảo trì, vui lòng quay lại sau.';
+    }
+  },
+
+  setMaintenanceMode: async (enabled: boolean, message?: string) => {
+    try {
+      await siteSettingsDb.ensureTable();
+      await sql`
+        INSERT INTO site_settings (key, value, updated_at)
+        VALUES ('maintenance_mode', ${enabled ? 'true' : 'false'}, CURRENT_TIMESTAMP)
+        ON CONFLICT (key) DO UPDATE SET
+          value = ${enabled ? 'true' : 'false'},
+          updated_at = CURRENT_TIMESTAMP
+      `;
+      
+      if (message !== undefined) {
+        await sql`
+          INSERT INTO site_settings (key, value, updated_at)
+          VALUES ('maintenance_message', ${message}, CURRENT_TIMESTAMP)
+          ON CONFLICT (key) DO UPDATE SET
+            value = ${message},
+            updated_at = CURRENT_TIMESTAMP
+        `;
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error setting maintenance mode:', error);
+      return { success: false };
+    }
   }
 };
 

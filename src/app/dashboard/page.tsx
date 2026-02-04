@@ -170,6 +170,17 @@ export default function DashboardPage() {
   const totalCredits = registeredCourses.reduce((sum, course) => sum + course.soTinChi, 0);
   const totalFee = registeredCourses.reduce((sum, course) => sum + course.mucHocPhi, 0);
 
+  const handleClearSession = async () => {
+    try {
+      await fetch('/api/auth/login', { method: 'DELETE' });
+    } catch (e) {
+      // Ignore errors
+    }
+    // Clear cookies on client side
+    document.cookie = 'user-session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+    router.push('/login');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center pro-bg">
@@ -190,6 +201,15 @@ export default function DashboardPage() {
           <div className="w-12 h-12 mx-auto mb-4 border-4 rounded-full animate-spin pro-spinner"></div>
           <p className="pro-text text-lg font-bold">Đang tải dữ liệu...</p>
           <p className="text-sm mt-1 text-yellow-400/60">Vui lòng chờ trong giây lát</p>
+          
+          {/* Nút xóa phiên khi loading quá lâu */}
+          <button
+            onClick={handleClearSession}
+            className="mt-6 px-4 py-2 text-sm bg-red-600/80 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center gap-2 mx-auto"
+          >
+            <LogOut className="w-4 h-4" />
+            Xóa phiên & Đăng nhập lại
+          </button>
         </div>
       </div>
     );
