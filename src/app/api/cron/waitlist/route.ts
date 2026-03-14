@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
                 course_name: entry.course_name,
                 class_code: entry.class_code,
                 status: 'success',
-                message: 'Đăng ký tự động từ cron job thành công'
+                message: 'Đăng ký học phần tự động thành công (CJ)'
               });
 
               registered++;

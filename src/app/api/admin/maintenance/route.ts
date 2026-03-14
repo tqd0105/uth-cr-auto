@@ -2,18 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAdminSession } from '@/lib/admin-auth';
 import { siteSettingsDb } from '@/lib/db-postgres';
 
-// GET - Lấy trạng thái maintenance mode
+// GET - Lấy trạng thái maintenance mode & site hidden
 export async function GET(request: NextRequest) {
   // API này public để middleware có thể check
   try {
     const isMaintenanceMode = await siteSettingsDb.isMaintenanceMode();
     const maintenanceMessage = await siteSettingsDb.getMaintenanceMessage();
+    const siteHidden = await siteSettingsDb.get('site_hidden');
     
     return NextResponse.json({
       success: true,
       data: {
         maintenance_mode: isMaintenanceMode,
-        maintenance_message: maintenanceMessage
+        maintenance_message: maintenanceMessage,
+        site_hidden: siteHidden === 'true'
       }
     });
   } catch (error) {
@@ -34,11 +36,20 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { enabled, message } = body;
+    const { enabled, message, site_hidden } = body;
+
+    // Handle site_hidden toggle
+    if (typeof site_hidden === 'boolean') {
+      await siteSettingsDb.set('site_hidden', site_hidden ? 'true' : 'false');
+      return NextResponse.json({
+        success: true,
+        message: site_hidden ? 'Đã ẩn trang web' : 'Đã hiện trang web'
+      });
+    }
 
     if (typeof enabled !== 'boolean') {
       return NextResponse.json(
-        { success: false, message: 'Thiếu tham số enabled' },
+        { success: false, message: 'Thiếu tham số enabled hoặc site_hidden' },
         { status: 400 }
       );
     }

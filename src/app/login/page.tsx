@@ -63,16 +63,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen relative flex items-center justify-center p-4">
+    <main className="min-h-screen relative flex items-center justify-center md:justify-end p-4">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-top bg-no-repeat "
-        style={{ backgroundImage: "url('/uth-gate.jpg')" }}
+        className="absolute inset-0 bg-cover bg-right-bottom bg-no-repeat "
+        style={{ backgroundImage: "url('/uth-new.png')" }}
       />
       {/* Overlay for better readability */}
       <div className="absolute inset-0 bg-black/40" />
       
-      <div className="relative z-10">
+      <div className="relative z-10 mr-10">
         {termsAccepted ? (
           <LoginForm recaptchaSiteKey={recaptchaSiteKey} />
         ) : (

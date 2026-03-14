@@ -134,7 +134,7 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
         </div>
         <CardTitle className="text-xl sm:text-2xl font-bold">Đăng nhập</CardTitle>
         <CardDescription className="text-xs sm:text-sm">
-          Đăng ký học phần tự động - UTH Portal
+          Đăng ký học phần tự động <br /> Automatic Course Registration for UTH students.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
@@ -156,7 +156,7 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
           )}
 
           {/* Username Field */}
-          <div className="space-y-1.5 sm:space-y-2">
+          <div className="space-y-1.5 sm:space-y-2 ">
             <label htmlFor="username" className="text-xs sm:text-sm font-medium text-gray-700">
               Mã sinh viên
             </label>
@@ -168,7 +168,7 @@ export function LoginForm({ recaptchaSiteKey }: LoginFormProps) {
                 placeholder="Nhập mã sinh viên"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="pl-10 text-sm"
+                className="pl-10 text-sm "
                 disabled={isLoading}
                 autoComplete="username"
               />

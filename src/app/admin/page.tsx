@@ -17,7 +17,9 @@ import {
   XCircle,
   Heart,
   Construction,
-  Power
+  Power,
+  EyeOff,
+  Eye
 } from 'lucide-react';
 
 // Import các components quản lý
@@ -58,6 +60,8 @@ export default function AdminDashboardPage() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [maintenanceMessage, setMaintenanceMessage] = useState('');
   const [isTogglingMaintenance, setIsTogglingMaintenance] = useState(false);
+  const [siteHidden, setSiteHidden] = useState(false);
+  const [isTogglingStealth, setIsTogglingStealth] = useState(false);
 
   // Check authentication
   useEffect(() => {
@@ -99,6 +103,7 @@ export default function AdminDashboardPage() {
       if (data.success) {
         setMaintenanceMode(data.data.maintenance_mode);
         setMaintenanceMessage(data.data.maintenance_message);
+        setSiteHidden(data.data.site_hidden || false);
       }
     } catch (error) {
       console.error('Failed to fetch maintenance status:', error);
@@ -142,6 +147,34 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleToggleStealth = async () => {
+    const newState = !siteHidden;
+    const confirmMsg = newState
+      ? '⚠️ Ẩn trang web?\n\nTrang sẽ hiện lỗi 404 giống như domain không tồn tại.\nChỉ admin panel vẫn truy cập được.'
+      : 'Hiện lại trang web?';
+    if (!confirm(confirmMsg)) return;
+
+    setIsTogglingStealth(true);
+    try {
+      const res = await fetch('/api/admin/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ site_hidden: newState })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSiteHidden(newState);
+        alert(newState ? '✅ Đã ẩn trang web (404)' : '✅ Đã hiện trang web');
+      } else {
+        alert('❌ ' + data.message);
+      }
+    } catch (error) {
+      alert('❌ Lỗi kết nối');
+    } finally {
+      setIsTogglingStealth(false);
+    }
+  };
+
   const handleLogout = async () => {
     await fetch('/api/admin/auth', { method: 'DELETE' });
     router.push('/admin/login');
@@ -171,7 +204,30 @@ export default function AdminDashboardPage() {
       <header className="bg-gray-800 border-b border-gray-700">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-lg font-semibold text-gray-200">Control Panel</h1>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Stealth (404) Toggle */}
+            <button
+              onClick={handleToggleStealth}
+              disabled={isTogglingStealth}
+              className={`flex items-center gap-2 px-3 py-1.5 text-sm rounded transition-colors ${
+                siteHidden
+                  ? 'bg-red-600 hover:bg-red-700 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              }`}
+              title={siteHidden ? 'Hiện trang web' : 'Ẩn trang web (giả 404)'}
+            >
+              {isTogglingStealth ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : siteHidden ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline">
+                {siteHidden ? 'Đang ẩn' : 'Ẩn site'}
+              </span>
+            </button>
+
             {/* Maintenance Toggle */}
             <button
               onClick={handleToggleMaintenance}
@@ -206,8 +262,18 @@ export default function AdminDashboardPage() {
         </div>
       </header>
 
+      {/* Site Hidden Banner */}
+      {siteHidden && (
+        <div className="bg-red-600/20 border-b border-red-600/50 px-4 py-2">
+          <div className="max-w-7xl mx-auto flex items-center gap-2 text-red-400 text-sm">
+            <EyeOff className="w-4 h-4" />
+            <span>Trang web đang ẨN - Người dùng sẽ thấy lỗi 404 (như domain không tồn tại)</span>
+          </div>
+        </div>
+      )}
+
       {/* Maintenance Banner */}
-      {maintenanceMode && (
+      {maintenanceMode && !siteHidden && (
         <div className="bg-yellow-600/20 border-b border-yellow-600/50 px-4 py-2">
           <div className="max-w-7xl mx-auto flex items-center gap-2 text-yellow-400 text-sm">
             <Construction className="w-4 h-4" />

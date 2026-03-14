@@ -183,8 +183,8 @@ export function RegisteredCourses({ courses, onRefresh }: RegisteredCoursesProps
       {/* Summary */}
       <Card className={`mt-3 sm:mt-4 ${
         isPro 
-          ? 'bg-gradient-to-r from-blue-900/30 to-cyan-900/30 border border-blue-500/30' 
-          : 'bg-blue-50 border-blue-100'
+          ? 'bg-gradient-to-r from-black to-green-600 border border-green-500/30' 
+          : 'bg-black border-blue-100'
       }`}>
         <CardContent className="p-3 sm:p-4">
           <div className="flex justify-between items-center">
@@ -195,7 +195,7 @@ export function RegisteredCourses({ courses, onRefresh }: RegisteredCoursesProps
               </p>
             </div>
             <div className="text-right">
-              <p className={`text-xs sm:text-sm ${isPro ? 'text-gray-400' : 'text-gray-600'}`}>Học phí</p>
+              <p className={`text-xs sm:text-sm ${isPro ? 'text-white' : 'text-gray-600'}`}>Học phí</p>
               <p className={`text-sm sm:text-lg font-bold ${isPro ? 'pro-text' : 'text-blue-600'}`}>
                 {formatCurrency(courses.reduce((sum, c) => sum + c.mucHocPhi, 0))}
               </p>
