@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { waitlistDb, userConfigDb, registrationLogDb, WaitlistStatus } from '@/lib/db-postgres';
 import { getUTHApi } from '@/lib/services/uth-api';
+import type { LopHocPhan } from '@/lib/types/uth';
+
+function resolveWaitlistClass(classes: LopHocPhan[], classId: string, classCode: string) {
+  return classes.find(c => c.id.toString() === classId)
+    || classes.find(c => c.maLopHocPhan === classCode)
+    || null;
+}
 
 // POST - Check and process waitlist for a user
 export async function POST(request: NextRequest) {
   try {
     const userSession = request.cookies.get('user-session')?.value;
-    
+
     if (!userSession) {
       return NextResponse.json(
         { success: false, message: 'Chưa đăng nhập' },
@@ -25,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     // Get waiting entries
     const waitingEntries = await waitlistDb.findWaitingByUser(userSession);
-    
+
     if (waitingEntries.length === 0) {
       return NextResponse.json({
         success: true,
@@ -38,6 +45,7 @@ export async function POST(request: NextRequest) {
     const savedData = JSON.parse(userConfig.uth_cookies);
     const { authToken, ...cookies } = savedData;
     const uthApi = getUTHApi(cookies, authToken);
+    const idDot = await uthApi.getActiveRegistrationPeriodId().catch(() => 75);
 
     let processed = 0;
     let registered = 0;
@@ -46,13 +54,13 @@ export async function POST(request: NextRequest) {
     for (const entry of waitingEntries) {
       try {
         processed++;
-        
+
         // Update last checked
         await waitlistDb.updateLastChecked(entry.id);
 
         // Get class info to check availability
-        const classes = await uthApi.getClassSections(75, entry.course_code);
-        const targetClass = classes.find(c => c.id.toString() === entry.class_id);
+        const classes = await uthApi.getClassSections(idDot, entry.course_code);
+        const targetClass = resolveWaitlistClass(classes, entry.class_id, entry.class_code);
 
         if (!targetClass) {
           results.push({
@@ -75,7 +83,7 @@ export async function POST(request: NextRequest) {
 
         // Try to register
         console.log(`[Waitlist] Attempting registration for ${entry.class_code}`);
-        
+
         const success = await uthApi.registerForClass({
           idLopHocPhan: parseInt(entry.class_id),
           'g-recaptcha-response': ''
@@ -84,7 +92,7 @@ export async function POST(request: NextRequest) {
         if (success) {
           // Update waitlist status
           await waitlistDb.updateStatus(entry.id, WaitlistStatus.REGISTERED);
-          
+
           // Log success
           await registrationLogDb.insert({
             user_session: userSession,

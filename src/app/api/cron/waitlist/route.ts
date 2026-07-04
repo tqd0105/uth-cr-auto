@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
 import { waitlistDb, userConfigDb, registrationLogDb, WaitlistStatus } from '@/lib/db-postgres';
 import { getUTHApi } from '@/lib/services/uth-api';
+import type { LopHocPhan } from '@/lib/types/uth';
+
+function resolveWaitlistClass(classes: LopHocPhan[], classId: string, classCode: string) {
+  return classes.find(c => c.id.toString() === classId)
+    || classes.find(c => c.maLopHocPhan === classCode)
+    || null;
+}
 
 // Cron job để tự động kiểm tra và đăng ký waitlist
 // Được gọi bởi cron-job.org mỗi 1 phút
@@ -10,7 +17,7 @@ export async function GET(request: NextRequest) {
     // Verify cron secret (optional security)
     const authHeader = request.headers.get('authorization');
     const cronSecret = process.env.CRON_SECRET;
-    
+
     // Nếu có CRON_SECRET, kiểm tra authorization
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json(
@@ -31,7 +38,7 @@ export async function GET(request: NextRequest) {
     `;
 
     const entries = result.rows;
-    
+
     if (entries.length === 0) {
       console.log('[Cron Waitlist] No waiting entries found');
       return NextResponse.json({
@@ -66,17 +73,18 @@ export async function GET(request: NextRequest) {
         const savedData = JSON.parse(userData.uthCookies);
         const { authToken, ...cookies } = savedData;
         const uthApi = getUTHApi(cookies, authToken);
+        const idDot = await uthApi.getActiveRegistrationPeriodId().catch(() => 75);
 
         for (const entry of userData.entries) {
           try {
             processed++;
-            
+
             // Update last checked
             await waitlistDb.updateLastChecked(entry.id);
 
             // Get class info to check availability
-            const classes = await uthApi.getClassSections(75, entry.course_code);
-            const targetClass = classes.find(c => c.id.toString() === entry.class_id);
+            const classes = await uthApi.getClassSections(idDot, entry.course_code);
+            const targetClass = resolveWaitlistClass(classes, entry.class_id, entry.class_code);
 
             if (!targetClass) {
               console.log(`[Cron Waitlist] Class ${entry.class_code} not found`);
@@ -103,7 +111,7 @@ export async function GET(request: NextRequest) {
 
             // Có chỗ trống! Thử đăng ký
             console.log(`[Cron Waitlist] Slot available for ${entry.class_code}! Attempting registration...`);
-            
+
             const success = await uthApi.registerForClass({
               idLopHocPhan: parseInt(entry.class_id),
               'g-recaptcha-response': ''
@@ -112,7 +120,7 @@ export async function GET(request: NextRequest) {
             if (success) {
               // Update waitlist status
               await waitlistDb.updateStatus(entry.id, WaitlistStatus.REGISTERED);
-              
+
               // Log success
               await registrationLogDb.insert({
                 user_session: userSession,
