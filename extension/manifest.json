@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "UTH Portal Bridge",
+  "version": "0.1.0",
+  "description": "Sync UTH Portal data to the local UTH auto registration app after you sign in to the portal.",
+  "action": {
+    "default_title": "UTH Bridge",
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": [
+    "https://portal.ut.edu.vn/*",
+    "http://localhost:3000/*",
+    "http://127.0.0.1:3000/*"
+  ]
+}

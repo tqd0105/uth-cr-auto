@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UTH Portal Bridge</title>
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        width: 360px;
+        margin: 0;
+        padding: 16px;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f8fafc;
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #475569;
+      }
+      input, textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 9px 10px;
+        font: inherit;
+        background: #fff;
+      }
+      textarea {
+        min-height: 92px;
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+        font-size: 11px;
+      }
+      button {
+        width: 100%;
+        border: 0;
+        border-radius: 8px;
+        padding: 10px 12px;
+        margin-top: 10px;
+        font-weight: 700;
+        color: #fff;
+        background: #2563eb;
+        cursor: pointer;
+      }
+      button.secondary {
+        background: #0f766e;
+      }
+      button:disabled {
+        opacity: .55;
+        cursor: not-allowed;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .status {
+        margin-top: 12px;
+        border-radius: 8px;
+        padding: 10px;
+        font-size: 12px;
+        line-height: 1.4;
+        background: #e0f2fe;
+        color: #075985;
+        white-space: pre-wrap;
+      }
+      .status.error {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+      .hint {
+        margin-top: 10px;
+        font-size: 12px;
+        line-height: 1.4;
+        color: #64748b;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>UTH Portal Bridge</h1>
+
+    <label for="appUrl">App URL</label>
+    <input id="appUrl" value="http://localhost:3000" />
+
+    <label for="bridgeToken">Bridge token</label>
+    <textarea id="bridgeToken" placeholder="Dán token đã copy từ dashboard"></textarea>
+
+    <button id="syncBase">Sync dashboard</button>
+
+    <label for="courseCode">Mã học phần để sync lớp</label>
+    <input id="courseCode" placeholder="Ví dụ: 0104080101" />
+    <div class="row">
+      <button id="syncClass" class="secondary">Sync lớp</button>
+      <button id="saveOnly" class="secondary">Lưu token</button>
+    </div>
+
+    <div id="status" class="status">Mở portal.ut.edu.vn và đăng nhập trước khi sync.</div>
+    <div class="hint">
+      Nếu bridge token hết hạn, quay lại dashboard và copy token mới.
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
